@@ -10,9 +10,10 @@ import (
 )
 
 type Env struct {
-	Log LogConfig `env:", prefix=LOG_"`
-	App App       `env:", prefix=APP_"`
-	Aws Aws       `env:", prefix=AWS_"`
+	Log    LogConfig `env:", prefix=LOG_"`
+	App    App       `env:", prefix=APP_"`
+	Aws    Aws       `env:", prefix=AWS_"`
+	Linker Linker    `env:", prefix=LINKER_"`
 }
 
 type App struct {
@@ -25,6 +26,9 @@ type LogConfig struct {
 
 type Aws struct {
 	QueueUrl string `env:"QUEUE_URL"`
+}
+type Linker struct {
+	Port string `env:"PORT, default=8880"`
 }
 
 var (
