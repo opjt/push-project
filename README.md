@@ -48,3 +48,8 @@ AWS 인프라(SNS,SQS)를 활용하여 **확장성 있는 메시지 처리** 구
 |    Go CLI Clients    |  <-- 터미널 기반 메시지 수신 및 처리, session매니저와 
 +----------------------+   grpc streaming으로 통신 or long polling
 ```
+
+## 서비스
+
+- [Linker](linker/README.md): 메시지를 SNS에 발행하는 Publisher
+- [sender](sender/README.md): SQS로부터 메시지를 읽고 세션으로 전달하는 Sender

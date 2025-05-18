@@ -1,3 +1,4 @@
 .localstack/*
+tmp/*
 
 .env
