@@ -3,8 +3,8 @@ package bootstrap
 import (
 	"context"
 	"push/common/lib"
-	"push/linker/api/router"
-	"push/linker/core"
+	"push/linker/internal/api/router"
+	"push/linker/internal/core"
 
 	"go.uber.org/fx"
 	"go.uber.org/fx/fxevent"

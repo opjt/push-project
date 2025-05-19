@@ -2,8 +2,8 @@ package router
 
 import (
 	"push/common/lib"
-	"push/linker/api/controller"
-	"push/linker/core"
+	"push/linker/internal/api/controller"
+	"push/linker/internal/core"
 )
 
 type MessageRouter struct {

@@ -1,8 +1,8 @@
 package api
 
 import (
-	"push/linker/api/controller"
-	"push/linker/api/router"
+	"push/linker/internal/api/controller"
+	"push/linker/internal/api/router"
 
 	"go.uber.org/fx"
 )

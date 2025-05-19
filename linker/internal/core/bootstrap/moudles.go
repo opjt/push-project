@@ -2,8 +2,8 @@ package bootstrap
 
 import (
 	"push/common/lib"
-	"push/linker/api"
-	"push/linker/core"
+	"push/linker/internal/api"
+	"push/linker/internal/core"
 
 	"go.uber.org/fx"
 )
