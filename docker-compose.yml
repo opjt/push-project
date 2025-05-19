@@ -12,12 +12,12 @@ services:
     image: mariadb:10.6
     container_name: local-mariadb
     environment:
-      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
-      - MYSQL_DATABASE=${MYSQL_DATABASE}
-      - MYSQL_USER=${MYSQL_USER}
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MARIA_ROOT_PASSWORD=${MARIA_ROOT_PASSWORD}
+      - MARIA_DATABASE=${MARIA_DATABASE}
+      - MARIA_USER=${MARIA_USER}
+      - MARIA_PASSWORD=${MARIA_PASSWORD}
     ports:
-      - "3306:3306"
+      - "${MARIA_PORT}:${MARIA_PORT}"
     volumes:
       - ./tmp/mariadb-data:/var/lib/mysql
 volumes:

@@ -14,6 +14,7 @@ type Env struct {
 	App    App       `env:", prefix=APP_"`
 	Aws    Aws       `env:", prefix=AWS_"`
 	Linker Linker    `env:", prefix=LINKER_"`
+	DB     DB        `env:", prefix=MARIA_"`
 }
 
 type App struct {
@@ -29,6 +30,14 @@ type Aws struct {
 }
 type Linker struct {
 	Port string `env:"PORT, default=8880"`
+}
+
+type DB struct {
+	User     string `env:"USER"`
+	Password string `env:"PASSWORD"`
+	Database string `env:"DATABASE"`
+	Host     string `env:"HOST"`
+	Port     string `env:"PORT"`
 }
 
 var (

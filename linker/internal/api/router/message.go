@@ -28,7 +28,7 @@ func NewMessageRouter(
 func (r MessageRouter) Setup() {
 	msgRoutes := r.engine.ApiGroup.Group("/msg")
 	{
-		msgRoutes.POST("", r.messageController.Test)
+		msgRoutes.GET("", r.messageController.Test)
 
 	}
 
