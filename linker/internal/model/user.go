@@ -13,5 +13,5 @@ type User struct {
 	CreatedAt time.Time      `gorm:"autoCreateTime"`
 	UpdatedAt time.Time      `gorm:"autoUpdateTime"`
 
-	// Messages []Message `gorm:"foreignKey:UserID"` // has-many 관계
+	Messages []Message `gorm:"foreignKey:UserID"` // has-many 관계
 }

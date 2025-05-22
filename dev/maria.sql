@@ -7,7 +7,7 @@ DROP TABLE IF EXISTS users;
 -- users 테이블 (소프트 삭제 포함)
 CREATE TABLE
     users (
-        id INT AUTO_INCREMENT PRIMARY KEY,
+        id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
         username VARCHAR(50) NOT NULL UNIQUE,
         deleted_at DATETIME DEFAULT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -17,8 +17,8 @@ CREATE TABLE
 -- messages 테이블
 CREATE TABLE
     messages (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        user_id INT NOT NULL,
+        id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        user_id BIGINT UNSIGNED NOT NULL,
         content TEXT,
         status VARCHAR(20) NOT NULL DEFAULT 'pending',
         sent_at DATETIME DEFAULT NULL,

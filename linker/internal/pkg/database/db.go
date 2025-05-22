@@ -28,6 +28,7 @@ func NewDB(env lib.Env, log lib.Logger) (*MariaDB, error) {
 	// 마이그레이션
 	if err := db.AutoMigrate(
 		&model.User{},
+		&model.Message{},
 	); err != nil {
 		return nil, fmt.Errorf("📦 마이그레이션 실패: %w", err)
 	}
