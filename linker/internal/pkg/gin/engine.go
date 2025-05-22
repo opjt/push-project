@@ -1,4 +1,4 @@
-package core
+package gin
 
 import (
 	"push/common/lib"

@@ -1,7 +1,7 @@
 package main
 
-import "push/linker/internal/core/bootstrap"
+import "push/linker/internal/core"
 
 func main() {
-	bootstrap.RunServer(bootstrap.CommonModules)
+	core.RunServer(core.CommonModules)
 }

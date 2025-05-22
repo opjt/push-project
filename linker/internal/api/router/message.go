@@ -3,18 +3,18 @@ package router
 import (
 	"push/common/lib"
 	"push/linker/internal/api/controller"
-	"push/linker/internal/core"
+	"push/linker/internal/pkg/gin"
 )
 
 type MessageRouter struct {
 	logger            lib.Logger
-	engine            core.Engine
+	engine            gin.Engine
 	messageController controller.MessageController
 }
 
 func NewMessageRouter(
 	logger lib.Logger,
-	engine core.Engine,
+	engine gin.Engine,
 	messageController controller.MessageController,
 
 ) Route {

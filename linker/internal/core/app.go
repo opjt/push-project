@@ -1,10 +1,10 @@
-package bootstrap
+package core
 
 import (
 	"context"
 	"push/common/lib"
 	"push/linker/internal/api/router"
-	"push/linker/internal/core"
+	"push/linker/internal/pkg/gin"
 
 	"go.uber.org/fx"
 	"go.uber.org/fx/fxevent"
@@ -30,7 +30,7 @@ func RunServer(opt fx.Option) {
 func Run() any {
 	return func(
 		env lib.Env,
-		engine core.Engine,
+		engine gin.Engine,
 		route router.Routers,
 		logger lib.Logger,
 
