@@ -19,6 +19,7 @@ CREATE TABLE
     messages (
         id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
         user_id BIGINT UNSIGNED NOT NULL,
+        title TEXT,
         content TEXT,
         status VARCHAR(20) NOT NULL DEFAULT 'pending',
         sent_at DATETIME DEFAULT NULL,

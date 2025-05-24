@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"fmt"
 	"push/common/lib"
 	"push/linker/internal/api/dto"
 	"push/linker/internal/model"
@@ -10,7 +9,12 @@ import (
 	"push/linker/internal/repository"
 )
 
-type MessageService struct {
+type MessageService interface {
+	createMessage(context.Context, dto.CreateMessageDTO) (uint, error)
+}
+
+// 메세지를 생성하고 관리하는 서비스.
+type messageService struct {
 	logger     lib.Logger
 	db         *database.MariaDB
 	repository repository.MessageRepository
@@ -21,32 +25,19 @@ func NewMessageService(
 	db *database.MariaDB,
 	repository repository.MessageRepository,
 ) MessageService {
-	return MessageService{
+	return &messageService{
 		logger:     logger,
 		db:         db,
 		repository: repository,
 	}
 }
 
-func (s MessageService) Test(ctx context.Context) error {
-
-	createDto := dto.CreateMessageDTO{
-		UserID:  1,
-		Content: "hi",
-	}
-	res, err := s.createMessage(ctx, createDto)
-	if err != nil {
-		return nil
-	}
-	fmt.Println(res)
-	return nil
-}
-
-func (s MessageService) createMessage(ctx context.Context, dto dto.CreateMessageDTO) (uint, error) {
+func (s *messageService) createMessage(ctx context.Context, dto dto.CreateMessageDTO) (uint, error) {
 	msg := &model.Message{
 		UserID:  dto.UserID,
+		Title:   dto.Title,
 		Content: dto.Content,
-		Status:  "pending", // 기본 상태
+		Status:  model.STATUS_PENDING,
 	}
 	id, err := s.repository.CreateMessage(ctx, msg)
 	if err != nil {

@@ -20,7 +20,7 @@ func NewRoutes(p struct {
 var Module = fx.Options(
 	fx.Provide(
 		fx.Annotate(
-			NewMessageRouter,
+			NewPushRouter,
 			fx.ResultTags(`group:"Routes"`),
 		),
 	),

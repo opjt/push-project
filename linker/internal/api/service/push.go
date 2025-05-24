@@ -1,48 +1,40 @@
 package service
 
 import (
+	"context"
 	"push/common/lib"
 
-	"push/linker/internal/pkg/database"
+	"push/linker/internal/api/dto"
 	"push/linker/internal/repository"
-
-	"github.com/gin-gonic/gin"
 )
 
-type PushService struct {
+type PushService interface {
+	PostPush(context.Context, dto.CreateMessageDTO) (uint, error)
+}
+type pushService struct {
 	logger         lib.Logger
-	db             *database.MariaDB
 	repository     repository.UserRepository
 	messageService MessageService
 }
 
 func NewPushService(
 	logger lib.Logger,
-	db *database.MariaDB,
 	repository repository.UserRepository,
 	messageService MessageService,
 ) PushService {
-	return PushService{
+	return &pushService{
 		logger:         logger,
-		db:             db,
 		repository:     repository,
 		messageService: messageService,
 	}
 }
 
-func (s PushService) Test(c *gin.Context) error {
-	if err := s.db.Ping(); err != nil {
-		s.logger.Error("DB ping failed: %v", err)
-		return err
+func (s *pushService) PostPush(ctx context.Context, dto dto.CreateMessageDTO) (uint, error) {
 
-	}
-	ctx := c.Request.Context()
-	usr, err := s.repository.GetUserByID(ctx, 1)
+	msgId, err := s.messageService.createMessage(ctx, dto)
 	if err != nil {
-		s.logger.Error("GetUserByID failed: %v", err)
+		return 0, err
 	}
 
-	_ = s.messageService.Test(ctx)
-	s.logger.Info("User: %v", usr)
-	return nil
+	return msgId, nil
 }
