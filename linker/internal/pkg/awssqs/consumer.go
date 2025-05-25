@@ -2,9 +2,12 @@ package awssqs
 
 import (
 	"context"
+	"errors"
 	"log"
 	"push/common/lib"
 	awsc "push/common/pkg/aws"
+	core "push/linker/internal/core/bootstrap"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
@@ -18,15 +21,13 @@ type Consumer struct {
 	logger   lib.Logger
 }
 
-func NewConsumer(cfg awsc.AwsConfig, lc fx.Lifecycle, logger lib.Logger, env lib.Env) *Consumer {
+func NewConsumer(cfg awsc.AwsConfig, lc fx.Lifecycle, logger lib.Logger, env lib.Env, ctx *core.AppContext) *Consumer {
 	client := sqs.NewFromConfig(cfg.Config)
-
-	ctx, cancel := context.WithCancel(context.Background())
 
 	c := &Consumer{
 		client:   client,
 		queueURL: env.Aws.StatusQueueUrl,
-		ctx:      ctx,
+		ctx:      ctx.Ctx,
 		logger:   logger,
 	}
 
@@ -37,7 +38,6 @@ func NewConsumer(cfg awsc.AwsConfig, lc fx.Lifecycle, logger lib.Logger, env lib
 		},
 		OnStop: func(context.Context) error {
 			logger.Info("Stopping SQS Consumer...")
-			cancel()
 			return nil
 		},
 	})
@@ -48,19 +48,36 @@ func NewConsumer(cfg awsc.AwsConfig, lc fx.Lifecycle, logger lib.Logger, env lib
 func (c *Consumer) start() {
 	c.logger.Info("SQS Consumer started")
 	for {
-		c.poll()
+		select {
+		case <-c.ctx.Done():
+			c.logger.Info("SQS Consumer stopped")
+			return
+		default:
+			c.poll()
+		}
 	}
 
 }
 
 func (c *Consumer) poll() {
-	resp, err := c.client.ReceiveMessage(c.ctx, &sqs.ReceiveMessageInput{
+	pollCtx, cancel := context.WithTimeout(c.ctx, 15*time.Second)
+	defer cancel()
+
+	resp, err := c.client.ReceiveMessage(pollCtx, &sqs.ReceiveMessageInput{
+		// resp, err := c.client.ReceiveMessage(c.ctx, &sqs.ReceiveMessageInput{
 		QueueUrl:            &c.queueURL,
 		MaxNumberOfMessages: 10,
 		WaitTimeSeconds:     10,
 	})
 	if err != nil {
-		log.Printf("ReceiveMessage failed: %v", err)
+		if errors.Is(err, context.DeadlineExceeded) {
+			c.logger.Warn("SQS ReceiveMessage timed out")
+		} else if errors.Is(err, context.Canceled) {
+			c.logger.Info("SQS polling canceled due to shutdown")
+		} else {
+			c.logger.Error("SQS error:", err)
+		}
+
 		return
 	}
 

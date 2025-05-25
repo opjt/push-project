@@ -5,8 +5,11 @@ import (
 	"net/http"
 	"push/common/lib"
 	"push/linker/internal/api/router"
+	"push/linker/internal/core/bootstrap"
 	"push/linker/internal/pkg/gin"
 	"time"
+
+	"github.com/gin-contrib/pprof"
 
 	"go.uber.org/fx"
 	"go.uber.org/fx/fxevent"
@@ -18,6 +21,7 @@ func RunServer(opt fx.Option) {
 		fx.WithLogger(func() fxevent.Logger {
 			return logger.GetFxLogger()
 		}),
+		fx.Provide(bootstrap.NewAppContext),
 		fx.Invoke(Run()),
 	)
 	app := fx.New(opt, opts)
@@ -45,11 +49,12 @@ func Run() any {
 		engine gin.Engine,
 		route router.Routers,
 		logger lib.Logger,
+		appCtx *bootstrap.AppContext,
 	) {
 		route.Setup()
 
 		logger.Info("Starting server on port: " + env.Linker.Port)
-
+		pprof.Register(engine.Gin)
 		server := &http.Server{
 			Addr:    ":" + env.Linker.Port,
 			Handler: engine.Gin,
@@ -67,6 +72,7 @@ func Run() any {
 			},
 			OnStop: func(ctx context.Context) error {
 				logger.Info("Shutting down server gracefully...")
+				appCtx.Cancel()
 				return server.Shutdown(ctx)
 			},
 		})
