@@ -34,13 +34,12 @@ func NewPushService(
 }
 
 func (s *pushService) PostPush(ctx context.Context, msgdto dto.PostPushDTO) (uint, error) {
-
 	snsBody := dto.SnsBody{
 		Title:  msgdto.Title,
 		Body:   msgdto.Content,
 		UserId: msgdto.UserId,
 	}
-
+	//SNS 발행
 	msgpubId, err := s.snsPublisher.Publish(ctx, snsBody)
 	if err != nil {
 		return 0, err
@@ -53,7 +52,7 @@ func (s *pushService) PostPush(ctx context.Context, msgdto dto.PostPushDTO) (uin
 		UserId:   msgdto.UserId,
 		SnsMsgId: msgpubId,
 	}
-
+	// DB에 저장.
 	msgId, err := s.messageService.createMessage(ctx, createMessageDto)
 	if err != nil {
 		return 0, err
