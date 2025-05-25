@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"fmt"
 	"push/common/lib"
 
 	"push/linker/internal/api/dto"
@@ -11,7 +10,7 @@ import (
 )
 
 type PushService interface {
-	PostPush(context.Context, dto.CreateMessageDTO) (uint, error)
+	PostPush(context.Context, dto.PostPushDTO) (uint, error)
 }
 type pushService struct {
 	logger         lib.Logger
@@ -34,15 +33,28 @@ func NewPushService(
 	}
 }
 
-func (s *pushService) PostPush(ctx context.Context, dto dto.CreateMessageDTO) (uint, error) {
+func (s *pushService) PostPush(ctx context.Context, msgdto dto.PostPushDTO) (uint, error) {
 
-	msgpubId, err := s.snsPublisher.Publish(ctx, dto.Content)
+	snsBody := dto.SnsBody{
+		Title:  msgdto.Title,
+		Body:   msgdto.Content,
+		UserId: msgdto.UserId,
+	}
+
+	msgpubId, err := s.snsPublisher.Publish(ctx, snsBody)
 	if err != nil {
-		fmt.Print(err)
 		return 0, err
 	}
 	s.logger.Debug("msgpubId:", msgpubId)
-	msgId, err := s.messageService.createMessage(ctx, dto)
+
+	createMessageDto := dto.CreateMessageDTO{
+		Title:    msgdto.Title,
+		Content:  msgdto.Content,
+		UserId:   msgdto.UserId,
+		SnsMsgId: msgpubId,
+	}
+
+	msgId, err := s.messageService.createMessage(ctx, createMessageDto)
 	if err != nil {
 		return 0, err
 	}

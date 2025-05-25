@@ -2,16 +2,18 @@ package awssns
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"push/common/lib"
 	awsc "push/common/pkg/aws"
+	"push/linker/internal/api/dto"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/sns"
 )
 
 type Publisher interface {
-	Publish(ctx context.Context, message string) (string, error)
+	Publish(context.Context, dto.SnsBody) (string, error)
 }
 
 type publisher struct {
@@ -26,10 +28,13 @@ func NewPublisher(cfg awsc.AwsConfig, env lib.Env) Publisher {
 	}
 }
 
-func (p *publisher) Publish(ctx context.Context, message string) (string, error) {
+func (p *publisher) Publish(ctx context.Context, msg dto.SnsBody) (string, error) {
 	var messageId string
+
+	b, _ := json.Marshal(msg)
+
 	out, err := p.client.Publish(ctx, &sns.PublishInput{
-		Message:        aws.String(message),
+		Message:        aws.String(string(b)),
 		TopicArn:       aws.String(p.env.Aws.SnsARN),
 		MessageGroupId: aws.String("default"),
 	})

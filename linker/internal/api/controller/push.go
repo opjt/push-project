@@ -31,15 +31,15 @@ func (p PushController) PostPush(c *gin.Context) {
 	}
 	userId := uint(uid)
 
-	var req dto.CreateMessageReq
+	var req dto.PostPushReq
 
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	dto := dto.CreateMessageDTO{
-		UserID:  userId,
+	dto := dto.PostPushDTO{
+		UserId:  userId,
 		Title:   req.Title,
 		Content: req.Content,
 	}
@@ -47,6 +47,7 @@ func (p PushController) PostPush(c *gin.Context) {
 	ctx := c.Request.Context()
 	id, err := p.service.PostPush(ctx, dto)
 	if err != nil {
+		p.logger.Error(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "error message"}) // TODO : 에러 처리 개선 필요.
 		return
 	}

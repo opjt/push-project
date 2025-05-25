@@ -34,7 +34,7 @@ func NewMessageService(
 
 func (s *messageService) createMessage(ctx context.Context, dto dto.CreateMessageDTO) (uint, error) {
 	msg := &model.Message{
-		UserID:  dto.UserID,
+		UserID:  dto.UserId,
 		Title:   dto.Title,
 		Content: dto.Content,
 		Status:  model.STATUS_PENDING,
