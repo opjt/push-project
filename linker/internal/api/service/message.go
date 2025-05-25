@@ -34,10 +34,11 @@ func NewMessageService(
 
 func (s *messageService) createMessage(ctx context.Context, dto dto.CreateMessageDTO) (uint, error) {
 	msg := &model.Message{
-		UserID:  dto.UserId,
-		Title:   dto.Title,
-		Content: dto.Content,
-		Status:  model.STATUS_PENDING,
+		UserID:   dto.UserId,
+		Title:    dto.Title,
+		Content:  dto.Content,
+		SnsMsgId: dto.SnsMsgId,
+		Status:   model.STATUS_PENDING,
 	}
 	id, err := s.repository.CreateMessage(ctx, msg)
 	if err != nil {
