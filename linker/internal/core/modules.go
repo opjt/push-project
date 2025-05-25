@@ -1,7 +1,7 @@
 package core
 
 import (
-	"push/common/lib"
+	"push/common"
 	"push/linker/internal/api"
 	"push/linker/internal/api/service"
 	"push/linker/internal/pkg"
@@ -13,7 +13,7 @@ import (
 
 var CommonModules = fx.Options(
 	api.Module,
-	lib.Module,
+	common.CommonModules,
 	pkg.Module,
 	service.Module,
 	repository.Module,
