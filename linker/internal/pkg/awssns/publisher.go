@@ -37,13 +37,14 @@ func (p *publisher) Publish(ctx context.Context, msg dto.SnsBody) (string, error
 	out, err := p.client.Publish(ctx, &sns.PublishInput{
 		Message:        aws.String(string(b)),
 		TopicArn:       aws.String(p.env.Aws.SnsARN),
-		MessageGroupId: aws.String("default"),
+		MessageGroupId: aws.String(fmt.Sprintf("user-%d", msg.UserId)),
 		MessageAttributes: map[string]types.MessageAttributeValue{
 			"messageType": {
 				DataType:    aws.String("String"),
 				StringValue: aws.String("push"),
 			},
 		},
+		MessageDeduplicationId: aws.String(fmt.Sprint(msg.MsgId)),
 	})
 	if err != nil {
 		return messageId, err

@@ -12,8 +12,7 @@ type PostPushDTO struct {
 }
 
 type CreateMessageDTO struct {
-	UserId   uint
-	Title    string
-	Content  string
-	SnsMsgId string
+	UserId  uint
+	Title   string
+	Content string
 }
