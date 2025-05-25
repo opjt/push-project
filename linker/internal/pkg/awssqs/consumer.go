@@ -1,11 +1,10 @@
-package sqs
+package awssqs
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"push/common/lib"
-	"time"
+	awsc "push/common/pkg/aws"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
@@ -16,25 +15,19 @@ type Consumer struct {
 	client   *sqs.Client
 	queueURL string
 	ctx      context.Context
-	cancel   context.CancelFunc
-	log      lib.Logger
+	logger   lib.Logger
 }
 
-func NewConsumer(client *sqs.Client, lc fx.Lifecycle, log lib.Logger, env lib.Env) *Consumer {
+func NewConsumer(cfg awsc.AwsConfig, lc fx.Lifecycle, logger lib.Logger, env lib.Env) *Consumer {
+	client := sqs.NewFromConfig(cfg.Config)
+
 	ctx, cancel := context.WithCancel(context.Background())
 
-	var queueURL string
-	if env.App.Stage == "dev" {
-		queueURL = "http://localhost:4566/000000000000/PushQueue.fifo"
-	} else {
-		queueURL = env.Aws.QueueUrl
-	}
 	c := &Consumer{
 		client:   client,
-		queueURL: queueURL,
+		queueURL: env.Aws.StatusQueueUrl,
 		ctx:      ctx,
-		cancel:   cancel,
-		log:      log,
+		logger:   logger,
 	}
 
 	lc.Append(fx.Hook{
@@ -43,8 +36,8 @@ func NewConsumer(client *sqs.Client, lc fx.Lifecycle, log lib.Logger, env lib.En
 			return nil
 		},
 		OnStop: func(context.Context) error {
-			log.Info("Stopping SQS Consumer...")
-			c.cancel()
+			logger.Info("Stopping SQS Consumer...")
+			cancel()
 			return nil
 		},
 	})
@@ -53,17 +46,11 @@ func NewConsumer(client *sqs.Client, lc fx.Lifecycle, log lib.Logger, env lib.En
 }
 
 func (c *Consumer) start() {
-	fmt.Println("SQS Consumer started")
+	c.logger.Info("SQS Consumer started")
 	for {
-		select {
-		case <-c.ctx.Done():
-			c.log.Info("SQS Consumer stopped")
-			return
-		default:
-			c.poll()
-			time.Sleep(1 * time.Second)
-		}
+		c.poll()
 	}
+
 }
 
 func (c *Consumer) poll() {
@@ -78,7 +65,7 @@ func (c *Consumer) poll() {
 	}
 
 	if len(resp.Messages) == 0 {
-		log.Println("No messages received")
+		c.logger.Debug("No messages received")
 		return
 	}
 

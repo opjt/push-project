@@ -1,20 +1,20 @@
-package awssns
+package sns
 
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"push/common/lib"
+	"push/sender/internal/dto"
+
 	awsc "push/common/pkg/aws"
-	"push/linker/internal/api/dto"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/sns"
-	"github.com/aws/aws-sdk-go-v2/service/sns/types"
+	types "github.com/aws/aws-sdk-go-v2/service/sns/types"
 )
 
 type Publisher interface {
-	Publish(context.Context, dto.SnsBody) (string, error)
+	Publish(context.Context, dto.Message) (string, error)
 }
 
 type publisher struct {
@@ -29,7 +29,7 @@ func NewPublisher(cfg awsc.AwsConfig, env lib.Env) Publisher {
 	}
 }
 
-func (p *publisher) Publish(ctx context.Context, msg dto.SnsBody) (string, error) {
+func (p *publisher) Publish(ctx context.Context, msg dto.Message) (string, error) {
 	var messageId string
 
 	b, _ := json.Marshal(msg)
@@ -41,7 +41,7 @@ func (p *publisher) Publish(ctx context.Context, msg dto.SnsBody) (string, error
 		MessageAttributes: map[string]types.MessageAttributeValue{
 			"messageType": {
 				DataType:    aws.String("String"),
-				StringValue: aws.String("push"),
+				StringValue: aws.String("status"),
 			},
 		},
 	})
@@ -49,7 +49,6 @@ func (p *publisher) Publish(ctx context.Context, msg dto.SnsBody) (string, error
 		return messageId, err
 	}
 	messageId = *out.MessageId
-	fmt.Println("Published message ID:", *out.MessageId)
 
 	return messageId, nil
 }

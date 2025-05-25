@@ -1,9 +1,9 @@
 package main
 
 import (
-	"push/sender/core"
+	"push/sender/internal/core"
 )
 
 func main() {
-	core.RunServer(core.CommonModules)
+	core.RunServer(core.Modules)
 }
