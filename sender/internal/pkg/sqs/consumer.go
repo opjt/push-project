@@ -3,6 +3,7 @@ package sqs
 import (
 	"context"
 	"push/common/lib"
+	awsc "push/common/pkg/aws"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
@@ -19,19 +20,13 @@ type Consumer struct {
 	workerNum int
 }
 
-func NewConsumer(client *sqs.Client, lc fx.Lifecycle, log lib.Logger, env lib.Env) *Consumer {
+func NewConsumer(cfg awsc.AwsConfig, lc fx.Lifecycle, log lib.Logger, env lib.Env) *Consumer {
 	ctx, cancel := context.WithCancel(context.Background())
-
-	var queueURL string
-	if env.App.Stage == "dev" {
-		queueURL = "http://localhost:4566/000000000000/PushQueue.fifo"
-	} else {
-		queueURL = env.Aws.PushQueueUrl
-	}
+	client := sqs.NewFromConfig(cfg.Config)
 
 	c := &Consumer{
 		client:    client,
-		queueURL:  queueURL,
+		queueURL:  env.Aws.PushQueueUrl,
 		ctx:       ctx,
 		log:       log,
 		msgChan:   make(chan types.Message, 100),

@@ -26,9 +26,8 @@ type LogConfig struct {
 }
 
 type Aws struct {
-	PushQueueUrl   string `env:"PUSH_QUEUE_URL"`
-	StatusQueueUrl string `env:"STATUS_QUEUE_URL"`
-	SnsARN         string `env:"SNS_ARN"`
+	PushQueueUrl string `env:"PUSH_QUEUE_URL"`
+	SnsARN       string `env:"SNS_ARN"`
 }
 type Linker struct {
 	Port string `env:"PORT, default=8880"`
