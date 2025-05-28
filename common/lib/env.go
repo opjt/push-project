@@ -10,18 +10,18 @@ import (
 )
 
 type Env struct {
-	Log    LogConfig `env:", prefix=LOG_"`
-	App    App       `env:", prefix=APP_"`
-	Aws    Aws       `env:", prefix=AWS_"`
-	Linker Linker    `env:", prefix=LINKER_"`
-	DB     DB        `env:", prefix=MARIA_"`
+	Log    Log    `env:", prefix=LOG_"`
+	App    App    `env:", prefix=APP_"`
+	Aws    Aws    `env:", prefix=AWS_"`
+	Linker Linker `env:", prefix=LINKER_"`
+	DB     DB     `env:", prefix=MARIA_"`
 }
 
 type App struct {
 	Stage string `env:"STAGE, default=dev"`
 }
 
-type LogConfig struct {
+type Log struct {
 	Level string `env:"LEVEL, default=debug"`
 }
 
@@ -51,8 +51,18 @@ func LoadEnv() Env {
 	if err := envconfig.Process(context.Background(), &env); err != nil {
 		log.Fatal(err)
 	}
+	validateEnv(&env)
 
 	return env
+}
+
+func validateEnv(e *Env) {
+	if e.DB.Host == "" || e.DB.Database == "" || e.DB.Password == "" || e.DB.User == "" {
+		log.Fatal("Invalid DB env")
+	}
+	if e.Aws.PushQueueUrl == "" || e.Aws.SnsARN == "" {
+		log.Fatal("Ivalid AWS env")
+	}
 }
 
 func NewEnv() Env {
