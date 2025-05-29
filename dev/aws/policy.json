@@ -1,0 +1,17 @@
+{
+  "Version": "2025-05-25",
+  "Id": "sns-sqs-policy",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": "*",
+      "Action": "SQS:SendMessage",
+      "Resource": "arn:aws:sqs:us-east-1:000000000000:PushQueue.fifo",
+      "Condition": {
+        "ArnEquals": {
+          "aws:SourceArn": "arn:aws:sns:us-east-1:000000000000:PushTopic.fifo"
+        }
+      }
+    }
+  ]
+}
