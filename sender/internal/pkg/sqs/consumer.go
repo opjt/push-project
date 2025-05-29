@@ -5,7 +5,6 @@ import (
 	"push/common/lib"
 	awsc "push/common/pkg/aws"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
 	"github.com/aws/aws-sdk-go-v2/service/sqs/types"
 	"go.uber.org/fx"
@@ -18,9 +17,10 @@ type Consumer struct {
 	log       lib.Logger
 	msgChan   chan types.Message
 	workerNum int
+	handler   Handler
 }
 
-func NewConsumer(cfg awsc.AwsConfig, lc fx.Lifecycle, log lib.Logger, env lib.Env) *Consumer {
+func NewConsumer(cfg awsc.AwsConfig, lc fx.Lifecycle, log lib.Logger, env lib.Env, handler Handler) *Consumer {
 	ctx, cancel := context.WithCancel(context.Background())
 	client := sqs.NewFromConfig(cfg.Config)
 
@@ -31,6 +31,7 @@ func NewConsumer(cfg awsc.AwsConfig, lc fx.Lifecycle, log lib.Logger, env lib.En
 		log:       log,
 		msgChan:   make(chan types.Message, 100),
 		workerNum: 5,
+		handler:   handler,
 	}
 
 	lc.Append(fx.Hook{
@@ -102,17 +103,19 @@ func (c *Consumer) receiveMessages() ([]types.Message, error) {
 }
 
 func (c *Consumer) worker(id int) {
-	c.log.Infof("Worker %d started", id)
+	c.log.Debugf("Worker %d started", id)
 	for msg := range c.msgChan {
 		c.processMessage(msg)
 	}
 }
 
 func (c *Consumer) processMessage(msg types.Message) {
-	// 실제 메시지 처리 로직 위치
-	c.log.Info(msg.Attributes["MessageDeduplicationId"])
-	c.log.Infof("Processing: %s", aws.ToString(msg.Body))
-
+	err := c.handler.HandleMessage(c.ctx, msg)
+	if err != nil {
+		c.log.Errorf("Message handling failed: %v", err)
+		// 선택적으로 재처리 로직 수행
+		return
+	}
 	if err := c.deleteMessage(msg); err != nil {
 		c.log.Errorf("Failed to delete message: %v", err)
 	} else {

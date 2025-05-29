@@ -7,7 +7,6 @@ import (
 )
 
 var Module = fx.Options(
-
-	fx.Provide(sqs.NewSQSClient),
+	fx.Provide(sqs.NewHandler),
 	fx.Invoke(sqs.NewConsumer),
 )
