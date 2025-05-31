@@ -1,6 +1,7 @@
 package pkg
 
 import (
+	"push/sender/internal/pkg/grpc"
 	"push/sender/internal/pkg/sqs"
 
 	"go.uber.org/fx"
@@ -9,4 +10,5 @@ import (
 var Module = fx.Options(
 	fx.Provide(sqs.NewHandler),
 	fx.Invoke(sqs.NewConsumer),
+	grpc.Module,
 )

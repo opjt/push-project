@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package linker.grpc;
+
+option go_package = "linker/api/proto;proto";
+
+service MessageService {
+  rpc UpdateStatus (ReqUpdateStatus) returns (ResUpdateStatus);
+}
+
+message ReqUpdateStatus {
+  uint64 id = 1;
+  string status = 2;
+  string sqsmsgId = 3;
+}
+
+message ResUpdateStatus {
+  string reply = 1;
+}

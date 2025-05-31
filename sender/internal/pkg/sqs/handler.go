@@ -5,6 +5,10 @@ import (
 	"encoding/json"
 	"push/common/lib"
 	"push/sender/internal/dto"
+	"push/sender/internal/pkg/grpc"
+	"time"
+
+	pb "push/linker/api/proto"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/sqs/types"
@@ -14,14 +18,16 @@ type Handler interface {
 	HandleMessage(ctx context.Context, msg types.Message) error
 }
 
-// handler_impl.go (혹은 handler.go 내부)
 type handler struct {
-	log lib.Logger
-	// 다른 의존성 (DB, RPC 등) 주입 가능
+	log     lib.Logger
+	mclient grpc.MessageClient
 }
 
-func NewHandler(log lib.Logger) Handler {
-	return &handler{log: log}
+func NewHandler(log lib.Logger, mclient grpc.MessageClient) Handler {
+	return &handler{
+		log:     log,
+		mclient: mclient,
+	}
 }
 
 func (h *handler) HandleMessage(ctx context.Context, msg types.Message) error {
@@ -32,6 +38,9 @@ func (h *handler) HandleMessage(ctx context.Context, msg types.Message) error {
 	}
 
 	h.log.Infof("Received push message: %+v", pushMsg)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+	h.mclient.UpdateStatus(ctx, &pb.ReqUpdateStatus{Id: uint64(pushMsg.MsgID), SqsmsgId: *msg.MessageId, Status: "sending"})
 	// 이후 pushMsg 처리
 	return nil
 }
