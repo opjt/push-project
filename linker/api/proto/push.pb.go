@@ -25,7 +25,7 @@ type ReqUpdateStatus struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            uint64                 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	Status        string                 `protobuf:"bytes,2,opt,name=status,proto3" json:"status,omitempty"`
-	SqsmsgId      string                 `protobuf:"bytes,3,opt,name=sqsmsgId,proto3" json:"sqsmsgId,omitempty"`
+	SqsMsgId      string                 `protobuf:"bytes,3,opt,name=sqsMsgId,proto3" json:"sqsMsgId,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -74,16 +74,16 @@ func (x *ReqUpdateStatus) GetStatus() string {
 	return ""
 }
 
-func (x *ReqUpdateStatus) GetSqsmsgId() string {
+func (x *ReqUpdateStatus) GetSqsMsgId() string {
 	if x != nil {
-		return x.SqsmsgId
+		return x.SqsMsgId
 	}
 	return ""
 }
 
 type ResUpdateStatus struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Reply         string                 `protobuf:"bytes,1,opt,name=reply,proto3" json:"reply,omitempty"`
+	Reply         uint64                 `protobuf:"varint,1,opt,name=reply,proto3" json:"reply,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -118,11 +118,11 @@ func (*ResUpdateStatus) Descriptor() ([]byte, []int) {
 	return file_linker_api_proto_push_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *ResUpdateStatus) GetReply() string {
+func (x *ResUpdateStatus) GetReply() uint64 {
 	if x != nil {
 		return x.Reply
 	}
-	return ""
+	return 0
 }
 
 var File_linker_api_proto_push_proto protoreflect.FileDescriptor
@@ -133,9 +133,9 @@ const file_linker_api_proto_push_proto_rawDesc = "" +
 	"\x0fReqUpdateStatus\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x04R\x02id\x12\x16\n" +
 	"\x06status\x18\x02 \x01(\tR\x06status\x12\x1a\n" +
-	"\bsqsmsgId\x18\x03 \x01(\tR\bsqsmsgId\"'\n" +
+	"\bsqsMsgId\x18\x03 \x01(\tR\bsqsMsgId\"'\n" +
 	"\x0fResUpdateStatus\x12\x14\n" +
-	"\x05reply\x18\x01 \x01(\tR\x05reply2\\\n" +
+	"\x05reply\x18\x01 \x01(\x04R\x05reply2\\\n" +
 	"\x0eMessageService\x12J\n" +
 	"\fUpdateStatus\x12\x1c.linker.grpc.ReqUpdateStatus\x1a\x1c.linker.grpc.ResUpdateStatusB\x18Z\x16linker/api/proto;protob\x06proto3"
 

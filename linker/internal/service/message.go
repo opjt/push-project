@@ -11,6 +11,7 @@ import (
 
 type MessageService interface {
 	createMessage(context.Context, dto.CreateMessageDTO) (uint, error)
+	UpdateMessageStatus(context.Context, dto.UpdateMessageDTO) error
 }
 
 // 메세지를 생성하고 관리하는 서비스.
@@ -44,4 +45,14 @@ func (s *messageService) createMessage(ctx context.Context, dto dto.CreateMessag
 		return 0, err
 	}
 	return id, nil
+}
+
+func (s *messageService) UpdateMessageStatus(ctx context.Context, dto dto.UpdateMessageDTO) error {
+
+	msg := &model.Message{
+		ID:     dto.Id,
+		Status: dto.Status,
+	}
+
+	return s.repository.UpdateMessage(ctx, msg)
 }

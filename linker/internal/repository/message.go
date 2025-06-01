@@ -10,6 +10,7 @@ import (
 
 type MessageRepository interface {
 	CreateMessage(ctx context.Context, msg *model.Message) (uint, error)
+	UpdateMessage(ctx context.Context, msg *model.Message) error
 	GetById(ctx context.Context, id uint) (*model.Message, error)
 }
 type messageRepository struct {
@@ -33,4 +34,10 @@ func (r *messageRepository) CreateMessage(ctx context.Context, msg *model.Messag
 	result := r.db.WithContext(ctx).Create(msg)
 
 	return msg.ID, result.Error
+}
+
+func (r *messageRepository) UpdateMessage(ctx context.Context, msg *model.Message) error {
+	return r.db.Model(&model.Message{}).
+		Where("id = ?", msg.ID).
+		Update("status", msg.Status).Error
 }

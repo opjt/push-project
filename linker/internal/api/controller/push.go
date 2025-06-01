@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"push/common/lib"
 	"push/linker/internal/api/dto"
-	"push/linker/internal/api/service"
+	"push/linker/internal/service"
 	"strconv"
 
 	"github.com/gin-gonic/gin"

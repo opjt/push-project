@@ -2,11 +2,12 @@ package grpc
 
 import (
 	"context"
-	"fmt"
 	"net"
 
 	"push/common/lib"
 	pb "push/linker/api/proto"
+	"push/linker/internal/api/dto"
+	"push/linker/internal/service"
 
 	"go.uber.org/fx"
 	"google.golang.org/grpc"
@@ -14,18 +15,29 @@ import (
 
 type messageServiceServer struct {
 	pb.UnimplementedMessageServiceServer
+
+	service service.MessageService
+	logger  lib.Logger
 }
 
-func NewMessageServiceServer() pb.MessageServiceServer {
-	return &messageServiceServer{}
+func NewMessageServiceServer(service service.MessageService, logger lib.Logger) pb.MessageServiceServer {
+	return &messageServiceServer{
+		service: service,
+		logger:  logger,
+	}
 }
 
 func (s *messageServiceServer) UpdateStatus(ctx context.Context, req *pb.ReqUpdateStatus) (*pb.ResUpdateStatus, error) {
-	// 여기서 원하는 비즈니스 로직 처리
-	fmt.Printf("UpdateStatus called with id=%d, status=%s, sqsmsgId=%s\n", req.Id, req.Status, req.SqsmsgId)
 
-	// 간단 응답 예시
-	return &pb.ResUpdateStatus{Reply: "Status updated successfully"}, nil
+	dto := dto.UpdateMessageDTO{
+		Id:     uint(req.Id),
+		Status: req.Status,
+	}
+	if err := s.service.UpdateMessageStatus(ctx, dto); err != nil {
+		s.logger.Error(err)
+	}
+
+	return &pb.ResUpdateStatus{Reply: 1}, nil
 }
 
 // grpc.Server 생성
@@ -46,7 +58,7 @@ func RegisterGRPCServer(lc fx.Lifecycle, grpcServer *grpc.Server, service pb.Mes
 
 			go func() {
 				if err := grpcServer.Serve(lis); err != nil {
-					fmt.Printf("gRPC server stopped: %v\n", err)
+					log.Errorf("gRPC server stopped: %v\n", err)
 				}
 			}()
 

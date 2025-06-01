@@ -15,5 +15,5 @@ message ReqUpdateStatus {
 }
 
 message ResUpdateStatus {
-  string reply = 1;
+  uint64 reply = 1; 
 }

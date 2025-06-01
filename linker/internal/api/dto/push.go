@@ -10,9 +10,3 @@ type PostPushDTO struct {
 	Title   string
 	Content string
 }
-
-type CreateMessageDTO struct {
-	UserId  uint
-	Title   string
-	Content string
-}

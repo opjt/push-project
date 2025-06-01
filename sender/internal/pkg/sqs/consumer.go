@@ -118,7 +118,7 @@ func (c *Consumer) processMessage(msg types.Message) {
 	if err := c.deleteMessage(msg); err != nil {
 		c.log.Errorf("Failed to delete message: %v", err)
 	} else {
-		c.log.Info("Message deleted")
+		c.log.Debug("Message deleted" + *msg.MessageId)
 	}
 }
 
