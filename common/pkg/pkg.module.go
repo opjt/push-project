@@ -1,7 +1,7 @@
 package pkg
 
 import (
-	"push/common/pkg/aws"
+	"push/common/pkg/awsinfra"
 
 	"go.uber.org/fx"
 )
@@ -9,5 +9,5 @@ import (
 // Lib 모듈관리.
 var Module = fx.Options(
 
-	fx.Provide(aws.NewAwsConfig),
+	fx.Provide(awsinfra.NewAwsConfig),
 )

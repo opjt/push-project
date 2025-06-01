@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"push/common/lib"
-	awsc "push/common/pkg/aws"
+	"push/common/pkg/awsinfra"
 	"push/linker/internal/api/dto"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -22,7 +22,7 @@ type publisher struct {
 	env    lib.Env
 }
 
-func NewPublisher(cfg awsc.AwsConfig, env lib.Env) Publisher {
+func NewPublisher(cfg awsinfra.AwsConfig, env lib.Env) Publisher {
 	return &publisher{
 		client: sns.NewFromConfig(cfg.Config),
 		env:    env,

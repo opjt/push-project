@@ -3,7 +3,7 @@ package sqs
 import (
 	"context"
 	"push/common/lib"
-	awsc "push/common/pkg/aws"
+	"push/common/pkg/awsinfra"
 
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
 	"github.com/aws/aws-sdk-go-v2/service/sqs/types"
@@ -20,7 +20,7 @@ type Consumer struct {
 	handler   Handler
 }
 
-func NewConsumer(cfg awsc.AwsConfig, lc fx.Lifecycle, log lib.Logger, env lib.Env, handler Handler) *Consumer {
+func NewConsumer(cfg awsinfra.AwsConfig, lc fx.Lifecycle, log lib.Logger, env lib.Env, handler Handler) *Consumer {
 	ctx, cancel := context.WithCancel(context.Background())
 	client := sqs.NewFromConfig(cfg.Config)
 
@@ -77,7 +77,6 @@ func (c *Consumer) poll() {
 	}
 
 	if len(messages) == 0 {
-		c.log.Info("No messages received")
 		return
 	}
 
