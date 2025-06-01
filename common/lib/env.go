@@ -30,7 +30,8 @@ type Aws struct {
 	SnsARN       string `env:"SNS_ARN"`
 }
 type Linker struct {
-	Port string `env:"PORT, default=8880"`
+	HttpPort string `env:"HTTP_PORT, default=8880"`
+	GrpcPort string `env:"GRPC_PORT, default=50051"`
 }
 
 type DB struct {

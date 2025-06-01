@@ -53,10 +53,10 @@ func Run() any {
 	) {
 		route.Setup()
 
-		logger.Info("Starting server on port: " + env.Linker.Port)
+		logger.Info("Starting server on port: " + env.Linker.HttpPort)
 		pprof.Register(engine.Gin)
 		server := &http.Server{
-			Addr:    ":" + env.Linker.Port,
+			Addr:    ":" + env.Linker.HttpPort,
 			Handler: engine.Gin,
 		}
 
