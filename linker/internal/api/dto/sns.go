@@ -1,8 +1,8 @@
 package dto
 
 type SnsBody struct {
-	MsgId  uint   `json:"msg_id"`
+	MsgId  uint64 `json:"msg_id"`
 	Title  string `json:"title"`
 	Body   string `json:"body"`
-	UserId uint   `json:"user_id"`
+	UserId uint64 `json:"user_id"`
 }

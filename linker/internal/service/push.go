@@ -10,7 +10,7 @@ import (
 )
 
 type PushService interface {
-	PostPush(context.Context, dto.PostPushDTO) (uint, error)
+	PostPush(context.Context, dto.PostPushDTO) (uint64, error)
 }
 type pushService struct {
 	logger         lib.Logger
@@ -33,7 +33,7 @@ func NewPushService(
 	}
 }
 
-func (s *pushService) PostPush(ctx context.Context, msgdto dto.PostPushDTO) (uint, error) {
+func (s *pushService) PostPush(ctx context.Context, msgdto dto.PostPushDTO) (uint64, error) {
 
 	createMessageDto := dto.CreateMessageDTO(msgdto)
 

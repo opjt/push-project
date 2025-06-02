@@ -25,7 +25,7 @@ func NewMessageServiceServer(service service.MessageService, logger lib.Logger) 
 func (s *messageServiceServer) UpdateStatus(ctx context.Context, req *pb.ReqUpdateStatus) (*pb.ResUpdateStatus, error) {
 
 	dto := dto.UpdateMessageDTO{
-		Id:       uint(req.Id),
+		Id:       req.Id,
 		Status:   req.Status,
 		SnsMsgId: req.SnsMsgId,
 	}

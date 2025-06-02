@@ -6,7 +6,7 @@ type PostPushReq struct {
 }
 
 type PostPushDTO struct {
-	UserId  uint
+	UserId  uint64
 	Title   string
 	Content string
 }

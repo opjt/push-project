@@ -7,7 +7,7 @@ import (
 )
 
 type User struct {
-	ID        uint           `gorm:"primaryKey;autoIncrement"`
+	ID        uint64         `gorm:"primaryKey;autoIncrement"`
 	Username  string         `gorm:"type:varchar(50);uniqueIndex;not null"`
 	DeletedAt gorm.DeletedAt `gorm:"index"`
 	CreatedAt time.Time      `gorm:"autoCreateTime"`

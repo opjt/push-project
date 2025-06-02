@@ -10,8 +10,8 @@ const (
 )
 
 type Message struct {
-	ID        uint       `gorm:"primaryKey;autoIncrement"`
-	UserID    uint       `gorm:"not null;index"` // 외래키
+	ID        uint64     `gorm:"primaryKey;autoIncrement"`
+	UserID    uint64     `gorm:"not null;index"` // 외래키
 	Title     string     `gorm:"type:text"`
 	Content   string     `gorm:"type:text"`
 	SnsMsgId  string     `gorm:"type:varchar(100);index"`

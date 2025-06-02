@@ -10,7 +10,7 @@ import (
 )
 
 type MessageService interface {
-	createMessage(context.Context, dto.CreateMessageDTO) (uint, error)
+	createMessage(context.Context, dto.CreateMessageDTO) (uint64, error)
 	UpdateMessageStatus(context.Context, dto.UpdateMessageDTO) error
 }
 
@@ -33,7 +33,7 @@ func NewMessageService(
 	}
 }
 
-func (s *messageService) createMessage(ctx context.Context, dto dto.CreateMessageDTO) (uint, error) {
+func (s *messageService) createMessage(ctx context.Context, dto dto.CreateMessageDTO) (uint64, error) {
 	msg := &model.Message{
 		UserID:  dto.UserId,
 		Title:   dto.Title,

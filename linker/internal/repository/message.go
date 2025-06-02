@@ -9,7 +9,7 @@ import (
 )
 
 type MessageRepository interface {
-	CreateMessage(ctx context.Context, msg *model.Message) (uint, error)
+	CreateMessage(ctx context.Context, msg *model.Message) (uint64, error)
 	UpdateMessage(ctx context.Context, msg *model.Message) error
 	GetById(ctx context.Context, id uint) (*model.Message, error)
 }
@@ -29,7 +29,7 @@ func (r *messageRepository) GetById(ctx context.Context, id uint) (*model.Messag
 	return &msg, nil
 }
 
-func (r *messageRepository) CreateMessage(ctx context.Context, msg *model.Message) (uint, error) {
+func (r *messageRepository) CreateMessage(ctx context.Context, msg *model.Message) (uint64, error) {
 
 	result := r.db.WithContext(ctx).Create(msg)
 

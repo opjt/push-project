@@ -1,13 +1,13 @@
 package dto
 
 type CreateMessageDTO struct {
-	UserId  uint
+	UserId  uint64
 	Title   string
 	Content string
 }
 
 type UpdateMessageDTO struct {
-	Id       uint
+	Id       uint64
 	Status   string
 	SnsMsgId string
 }

@@ -29,7 +29,7 @@ func (p PushController) PostPush(c *gin.Context) {
 		c.JSON(400, gin.H{"error": "Invalid userid"})
 		return
 	}
-	userId := uint(uid)
+	userId := uint64(uid)
 
 	var req dto.PostPushReq
 
