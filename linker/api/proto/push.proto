@@ -11,7 +11,7 @@ service MessageService {
 message ReqUpdateStatus {
   uint64 id = 1;
   string status = 2;
-  string sqsMsgId = 3;
+  string snsMsgId = 3;
 }
 
 message ResUpdateStatus {

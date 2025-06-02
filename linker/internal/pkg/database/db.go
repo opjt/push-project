@@ -19,20 +19,13 @@ func NewDB(env lib.Env, log lib.Logger) (*MariaDB, error) {
 	)
 
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
-		// Logger: log.GetGormLogger(),
+		Logger: log.GetGormLogger(),
 	})
 	if err != nil {
 		return nil, fmt.Errorf("MariaDB 연결 실패: %w", err)
 	}
-	// 마이그레이션
-	// if err := db.AutoMigrate(
-	// 	&model.User{},
-	// 	&model.Message{},
-	// ); err != nil {
-	// 	return nil, fmt.Errorf("📦 마이그레이션 실패: %w", err)
-	// }
 
-	log.Debug("✅ MariaDB 연결 성공")
+	log.Debug("MariaDB 연결 성공")
 	return &MariaDB{db}, nil
 }
 func (db *MariaDB) GetDB() *gorm.DB {

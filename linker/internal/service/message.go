@@ -50,8 +50,9 @@ func (s *messageService) createMessage(ctx context.Context, dto dto.CreateMessag
 func (s *messageService) UpdateMessageStatus(ctx context.Context, dto dto.UpdateMessageDTO) error {
 
 	msg := &model.Message{
-		ID:     dto.Id,
-		Status: dto.Status,
+		ID:       dto.Id,
+		Status:   dto.Status,
+		SnsMsgId: dto.SnsMsgId,
 	}
 
 	return s.repository.UpdateMessage(ctx, msg)

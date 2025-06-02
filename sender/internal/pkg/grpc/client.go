@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"context"
+	"fmt"
 	"push/common/lib"
 	pb "push/linker/api/proto"
 
@@ -10,6 +11,8 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
+// TODO : 향후 공통서비스에서 해당 클라이언트를 제공하도록 개선 필요.
+// FIX : ssasdasd
 type messageClient struct {
 	client pb.MessageServiceClient
 	logger lib.Logger
@@ -19,11 +22,12 @@ type MessageClient interface {
 	UpdateStatus(context.Context, *pb.ReqUpdateStatus) (*pb.ResUpdateStatus, error)
 }
 
-func NewMessageServiceClient(logger lib.Logger, lc fx.Lifecycle) MessageClient {
-
+// grpc client 생성자
+func NewMessageServiceClient(logger lib.Logger, lc fx.Lifecycle) (MessageClient, error) {
+	// Linker gRPC 연결.
 	clientConn, err := grpc.NewClient("localhost:50051", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
-		logger.Fatal("grpc client error") // TODO: 에러핸들링 수정 필요
+		return nil, fmt.Errorf("failed to create gRPC client: %w", err)
 
 	}
 	messageServiceClient := pb.NewMessageServiceClient(clientConn)
@@ -44,7 +48,7 @@ func NewMessageServiceClient(logger lib.Logger, lc fx.Lifecycle) MessageClient {
 		},
 	})
 
-	return &c
+	return &c, nil
 }
 
 func (m *messageClient) UpdateStatus(ctx context.Context, req *pb.ReqUpdateStatus) (*pb.ResUpdateStatus, error) {

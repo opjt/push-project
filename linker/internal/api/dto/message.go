@@ -7,6 +7,7 @@ type CreateMessageDTO struct {
 }
 
 type UpdateMessageDTO struct {
-	Id     uint
-	Status string
+	Id       uint
+	Status   string
+	SnsMsgId string
 }

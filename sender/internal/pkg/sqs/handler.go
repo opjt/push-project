@@ -40,7 +40,7 @@ func (h *handler) HandleMessage(ctx context.Context, msg types.Message) error {
 	h.log.Infof("Received push message: %+v", pushMsg)
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
-	h.mclient.UpdateStatus(ctx, &pb.ReqUpdateStatus{Id: uint64(pushMsg.MsgID), SqsMsgId: *msg.MessageId, Status: "sending"})
+	h.mclient.UpdateStatus(ctx, &pb.ReqUpdateStatus{Id: uint64(pushMsg.MsgID), SnsMsgId: *msg.MessageId, Status: "sending"})
 	// 이후 pushMsg 처리
 	return nil
 }

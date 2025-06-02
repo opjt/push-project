@@ -119,7 +119,7 @@ func (l *FxLogger) LogEvent(event fxevent.Event) {
 		l.Logger.Debug("invoking: ", e.FunctionName)
 	case *fxevent.Started:
 		if e.Err == nil {
-			l.Logger.Debug("started")
+			l.Logger.Debug("fx started")
 		}
 	case *fxevent.LoggerInitialized:
 		if e.Err == nil {

@@ -25,7 +25,7 @@ type ReqUpdateStatus struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            uint64                 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	Status        string                 `protobuf:"bytes,2,opt,name=status,proto3" json:"status,omitempty"`
-	SqsMsgId      string                 `protobuf:"bytes,3,opt,name=sqsMsgId,proto3" json:"sqsMsgId,omitempty"`
+	SnsMsgId      string                 `protobuf:"bytes,3,opt,name=snsMsgId,proto3" json:"snsMsgId,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -74,9 +74,9 @@ func (x *ReqUpdateStatus) GetStatus() string {
 	return ""
 }
 
-func (x *ReqUpdateStatus) GetSqsMsgId() string {
+func (x *ReqUpdateStatus) GetSnsMsgId() string {
 	if x != nil {
-		return x.SqsMsgId
+		return x.SnsMsgId
 	}
 	return ""
 }
@@ -133,7 +133,7 @@ const file_linker_api_proto_push_proto_rawDesc = "" +
 	"\x0fReqUpdateStatus\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x04R\x02id\x12\x16\n" +
 	"\x06status\x18\x02 \x01(\tR\x06status\x12\x1a\n" +
-	"\bsqsMsgId\x18\x03 \x01(\tR\bsqsMsgId\"'\n" +
+	"\bsnsMsgId\x18\x03 \x01(\tR\bsnsMsgId\"'\n" +
 	"\x0fResUpdateStatus\x12\x14\n" +
 	"\x05reply\x18\x01 \x01(\x04R\x05reply2\\\n" +
 	"\x0eMessageService\x12J\n" +

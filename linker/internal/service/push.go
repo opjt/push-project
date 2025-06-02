@@ -37,7 +37,7 @@ func (s *pushService) PostPush(ctx context.Context, msgdto dto.PostPushDTO) (uin
 
 	createMessageDto := dto.CreateMessageDTO(msgdto)
 
-	// DB에 저장.
+	// DB에 저장 먼저 이후, mq 로직수행.
 	msgId, err := s.messageService.createMessage(ctx, createMessageDto)
 	if err != nil {
 		return 0, err
