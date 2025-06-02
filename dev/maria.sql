@@ -23,11 +23,11 @@ CREATE TABLE
         content TEXT,
         status VARCHAR(20) NOT NULL DEFAULT 'pending',
         sent_at DATETIME DEFAULT NULL,
-        sns_message_id VARCHAR(100) DEFAULT NULL,
+        sns_msg_id VARCHAR(100) DEFAULT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         INDEX idx_user_id (user_id),
         INDEX idx_status (status),
-        INDEX idx_sns_message_id (sns_message_id),
+        INDEX idx_sns_msg_id (sns_msg_id),
         CONSTRAINT fk_messages_users FOREIGN KEY (user_id) REFERENCES users (id)
     );
