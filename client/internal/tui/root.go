@@ -41,8 +41,6 @@ type RootModel struct {
 func NewRootModel(login *LoginModel, chat *ChatModel) *RootModel {
 	return &RootModel{
 		state:      stateLogin,
-		width:      80,
-		height:     24,
 		messages:   []string{},
 		loginModel: login,
 		chatModel:  chat,
@@ -55,6 +53,12 @@ func (r *RootModel) Init() tea.Cmd {
 }
 
 func (r *RootModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		r.width = msg.Width
+		r.height = msg.Height
+		return r, nil
+	}
 	switch r.state {
 	case stateLogin:
 		newModel, cmd := r.loginModel.Update(msg)
@@ -62,8 +66,7 @@ func (r *RootModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		// 로그인 성공 시 이벤트 발생
 		if r.loginModel.loggedIn {
 			r.state = stateChat
-			// 채팅 UI 초기화
-			r.chatModel.InitChat(r.width, r.height)
+			r.chatModel.Resize(r.width, r.height)
 		}
 		return r, cmd
 
@@ -80,6 +83,7 @@ func (r *RootModel) View() string {
 	case stateLogin:
 		return r.loginModel.View()
 	case stateChat:
+
 		return r.chatModel.View()
 	}
 	return ""

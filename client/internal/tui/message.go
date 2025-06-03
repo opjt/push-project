@@ -22,48 +22,82 @@ type ChatModel struct {
 }
 
 func NewChatModel() *ChatModel {
-	return &ChatModel{}
-}
-
-func (m *ChatModel) InitChat(width, height int) {
-	m.width = width
-	m.height = height
-
-	ta := textarea.New()
-	ta.Placeholder = "Send a message..."
-	ta.Focus()
-	ta.Prompt = "┃ "
-	ta.CharLimit = 280
-	ta.SetWidth(width - 20 - gap*2 - 4)
-	ta.SetHeight(3)
-	ta.FocusedStyle.CursorLine = lipgloss.NewStyle()
-	ta.ShowLineNumbers = false
-	ta.KeyMap.InsertNewline.SetEnabled(false)
-
-	vp := viewport.New(width-20-gap*2-4, height-3-gap-5)
-	vp.SetContent("Welcome to the chat room!")
-
+	// 유저 리스트 아이템들
 	users := []list.Item{
 		style.UserItem("alice"),
 		style.UserItem("bob"),
 		style.UserItem("carol"),
 		style.UserItem("dave"),
 	}
-	userList := list.New(users, style.SingleLineDelegate{}, 20, height-6)
+
+	// 사용자 리스트 생성 (초기 높이는 0으로 두고 Update에서 설정)
+	userList := list.New(users, style.SingleLineDelegate{}, 20, 0)
 	userList.Title = "Users"
 	userList.SetShowStatusBar(false)
 	userList.SetFilteringEnabled(false)
 	userList.DisableQuitKeybindings()
 
-	m.textarea = ta
-	m.viewport = vp
-	m.users = userList
-	m.messages = []string{}
-	m.focusArea = "textarea"
+	// 텍스트 영역 초기화 (크기 0으로 초기화, Update에서 조정)
+	ta := textarea.New()
+	ta.Placeholder = "Send a message..."
+	ta.Prompt = "┃ "
+	ta.CharLimit = 280
+	ta.FocusedStyle.CursorLine = lipgloss.NewStyle()
+	ta.ShowLineNumbers = false
+	ta.KeyMap.InsertNewline.SetEnabled(false)
+	ta.Blur() // 기본은 포커스 해제 상태, Update에서 포커스 조절
+
+	// 뷰포트 초기화 (크기 0, Update에서 설정)
+	vp := viewport.New(0, 0)
+	vp.SetContent("Welcome to the chat room!")
+
+	return &ChatModel{
+		users:     userList,
+		viewport:  vp,
+		textarea:  ta,
+		messages:  []string{},
+		focusArea: "textarea",
+		width:     0,
+		height:    0,
+	}
 }
 
 func (m *ChatModel) Init() tea.Cmd {
 	return nil
+}
+func (m *ChatModel) Resize(width, height int) {
+	m.width = width
+	m.height = height
+
+	userListWidth := 20
+	userListVerticalPadding := userListStyle.GetPaddingTop() + userListStyle.GetPaddingBottom()
+	chatViewVerticalPadding := chatViewStyle.GetPaddingTop() + chatViewStyle.GetPaddingBottom()
+
+	// textarea 크기 설정
+	m.textarea.SetWidth(m.width - userListWidth - gap*2 - 4)
+	m.textarea.SetHeight(3)
+
+	// viewport 크기 설정
+	m.viewport.Width = m.width - userListWidth - gap*2 - 4
+	m.viewport.Height = m.height - m.textarea.Height() - gap - chatViewVerticalPadding - 2
+
+	// users 리스트 크기 설정
+	m.users.SetWidth(userListWidth)
+	m.users.SetHeight(m.height - userListVerticalPadding - 3)
+
+	// textarea 포커스 상태 관리
+	if m.focusArea == "textarea" {
+		m.textarea.Focus()
+	} else {
+		m.textarea.Blur()
+	}
+
+	// 메시지가 있으면 뷰포트 내용 갱신 및 스크롤 최하단 이동
+	if len(m.messages) > 0 {
+		content := strings.Join(m.messages, "\n")
+		m.viewport.SetContent(lipgloss.NewStyle().Width(m.viewport.Width).Render(content))
+		m.viewport.GotoBottom()
+	}
 }
 
 func (m *ChatModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -76,30 +110,15 @@ func (m *ChatModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
-		m.width = msg.Width
-		m.height = msg.Height
-
-		userListWidth := 20
-		userListVerticalPadding := userListStyle.GetPaddingTop() + userListStyle.GetPaddingBottom()
-		chatViewVerticalPadding := chatViewStyle.GetPaddingTop() + chatViewStyle.GetPaddingBottom()
-
-		m.textarea.SetWidth(m.width - userListWidth - gap*2 - 4)
-		m.viewport.Width = m.width - userListWidth - gap*2 - 4
-		m.viewport.Height = m.height - m.textarea.Height() - gap - chatViewVerticalPadding - 2
-		m.users.SetWidth(userListWidth)
-		m.users.SetHeight(m.height - userListVerticalPadding - 3)
-
-		if len(m.messages) > 0 {
-			content := strings.Join(m.messages, "\n")
-			m.viewport.SetContent(lipgloss.NewStyle().Width(m.viewport.Width).Render(content))
-			m.viewport.GotoBottom()
-		}
+		m.Resize(msg.Width, msg.Height)
 
 	case tea.KeyMsg:
 		switch msg.Type {
 		case tea.KeyCtrlC, tea.KeyEsc:
 			return m, tea.Quit
+
 		case tea.KeyTab:
+			// 포커스 전환
 			if m.focusArea == "textarea" {
 				m.focusArea = "users"
 				m.textarea.Blur()
@@ -107,6 +126,7 @@ func (m *ChatModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.focusArea = "textarea"
 				m.textarea.Focus()
 			}
+
 		case tea.KeyEnter:
 			if m.focusArea == "textarea" {
 				input := m.textarea.Value()
@@ -121,7 +141,7 @@ func (m *ChatModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	}
 
-	// 포커스에 따라 해당 요소만 입력 처리
+	// 포커스에 따른 개별 업데이트 처리
 	if m.focusArea == "textarea" {
 		m.textarea, taCmd = m.textarea.Update(msg)
 	} else {
