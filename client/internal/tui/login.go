@@ -12,6 +12,7 @@ import (
 type LoginModel struct {
 	textInput textinput.Model
 	loggedIn  bool
+	warning   string
 }
 
 func NewLoginModel() *LoginModel {
@@ -24,6 +25,7 @@ func NewLoginModel() *LoginModel {
 	return &LoginModel{
 		textInput: ti,
 		loggedIn:  false,
+		warning:   "",
 	}
 }
 
@@ -40,8 +42,12 @@ func (m *LoginModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.Type {
 		case tea.KeyEnter:
 			username := strings.TrimSpace(m.textInput.Value())
-			if username != "" {
+			if len(username) < 3 {
+				m.warning = "Username must be at least 3 characters."
+				m.textInput.Reset()
+			} else {
 				m.loggedIn = true
+				m.warning = ""
 				return m, nil
 			}
 		case tea.KeyCtrlC, tea.KeyEsc:
@@ -54,7 +60,12 @@ func (m *LoginModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m *LoginModel) View() string {
-	return lipgloss.NewStyle().Padding(2, 4).Render(
-		"Login\n\n" + m.textInput.View() + "\n\n(Enter to login, Esc to quit)",
-	)
+	warningStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("9"))
+	content := "Login\n\n" + m.textInput.View()
+	if m.warning != "" {
+		content += "\n" + warningStyle.Render(m.warning)
+	}
+	content += "\n\n(Enter to login, Esc to quit)"
+
+	return lipgloss.NewStyle().Padding(2, 4).Render(content)
 }

@@ -11,15 +11,14 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-// ChatModel: 채팅 화면, 상태
 type ChatModel struct {
-	users    list.Model
-	viewport viewport.Model
-	textarea textarea.Model
-
-	width    int
-	height   int
-	messages []string
+	users     list.Model
+	viewport  viewport.Model
+	textarea  textarea.Model
+	width     int
+	height    int
+	messages  []string
+	focusArea string // "textarea" or "users"
 }
 
 func NewChatModel() *ChatModel {
@@ -49,7 +48,6 @@ func (m *ChatModel) InitChat(width, height int) {
 		style.UserItem("bob"),
 		style.UserItem("carol"),
 		style.UserItem("dave"),
-		style.UserItem("eve"),
 	}
 	userList := list.New(users, style.SingleLineDelegate{}, 20, height-6)
 	userList.Title = "Users"
@@ -61,10 +59,10 @@ func (m *ChatModel) InitChat(width, height int) {
 	m.viewport = vp
 	m.users = userList
 	m.messages = []string{}
+	m.focusArea = "textarea"
 }
 
 func (m *ChatModel) Init() tea.Cmd {
-	// No initialization needed for now
 	return nil
 }
 
@@ -76,26 +74,18 @@ func (m *ChatModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		cmds  []tea.Cmd
 	)
 
-	m.textarea, taCmd = m.textarea.Update(msg)
-	m.viewport, vpCmd = m.viewport.Update(msg)
-	m.users, lCmd = m.users.Update(msg)
-	cmds = append(cmds, taCmd, vpCmd, lCmd)
-
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
 		m.height = msg.Height
 
 		userListWidth := 20
-
 		userListVerticalPadding := userListStyle.GetPaddingTop() + userListStyle.GetPaddingBottom()
 		chatViewVerticalPadding := chatViewStyle.GetPaddingTop() + chatViewStyle.GetPaddingBottom()
 
 		m.textarea.SetWidth(m.width - userListWidth - gap*2 - 4)
 		m.viewport.Width = m.width - userListWidth - gap*2 - 4
-
 		m.viewport.Height = m.height - m.textarea.Height() - gap - chatViewVerticalPadding - 2
-
 		m.users.SetWidth(userListWidth)
 		m.users.SetHeight(m.height - userListVerticalPadding - 3)
 
@@ -109,17 +99,37 @@ func (m *ChatModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.Type {
 		case tea.KeyCtrlC, tea.KeyEsc:
 			return m, tea.Quit
+		case tea.KeyTab:
+			if m.focusArea == "textarea" {
+				m.focusArea = "users"
+				m.textarea.Blur()
+			} else {
+				m.focusArea = "textarea"
+				m.textarea.Focus()
+			}
 		case tea.KeyEnter:
-			input := m.textarea.Value()
-			if strings.TrimSpace(input) != "" {
-				m.messages = append(m.messages, senderStyle.Render("You: ")+input)
-				content := strings.Join(m.messages, "\n")
-				m.viewport.SetContent(lipgloss.NewStyle().Width(m.viewport.Width).Render(content))
-				m.textarea.Reset()
-				m.viewport.GotoBottom()
+			if m.focusArea == "textarea" {
+				input := m.textarea.Value()
+				if strings.TrimSpace(input) != "" {
+					m.messages = append(m.messages, senderStyle.Render("You: ")+input)
+					content := strings.Join(m.messages, "\n")
+					m.viewport.SetContent(lipgloss.NewStyle().Width(m.viewport.Width).Render(content))
+					m.textarea.Reset()
+					m.viewport.GotoBottom()
+				}
 			}
 		}
 	}
+
+	// 포커스에 따라 해당 요소만 입력 처리
+	if m.focusArea == "textarea" {
+		m.textarea, taCmd = m.textarea.Update(msg)
+	} else {
+		m.users, lCmd = m.users.Update(msg)
+	}
+
+	m.viewport, vpCmd = m.viewport.Update(msg)
+	cmds = append(cmds, taCmd, lCmd, vpCmd)
 
 	return m, tea.Batch(cmds...)
 }
