@@ -40,7 +40,7 @@ API 호출만으로는 보장하기 어려운 장애 복원과 비동기 메시�
      | 
      v
 +----------------------+
-|  Sesseion manager    |  <-- 클라이언트와 세션 유지 (gRPC)
+|  Sesseion manager    |  <-- 클라이언트와 세션 유지 
 +----------------------+
      |
      v
@@ -52,4 +52,4 @@ API 호출만으로는 보장하기 어려운 장애 복원과 비동기 메시�
 ## 서비스
 
 - [Linker](linker/README.md): 메시지를 SNS에 발행하는 Publisher
-- [sender](sender/README.md): SQS로부터 메시지를 읽고 세션으로 전달하는 Sender
+- [sender](sender/README.md): SQS로부터 메시지를 읽고 클라이언트에 전달하는 Sender
