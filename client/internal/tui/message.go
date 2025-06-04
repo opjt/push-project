@@ -2,6 +2,7 @@ package tui
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	"push/client/internal/pkg/grpc"
@@ -13,6 +14,8 @@ import (
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type ChatModel struct {
@@ -70,18 +73,26 @@ func NewChatModel(logger lib.Logger, client grpc.SessionClient) *ChatModel {
 		userID:        "client1", // 실제 사용자 ID로 교체 필요
 	}
 }
-
 func (m *ChatModel) Init() tea.Cmd {
 	ctx := context.Background()
 
-	go func() {
-		if err := m.sessionClient.Connect(ctx, m.userID, m.messageCh); err != nil {
-			m.logger.Errorf("Connect failed: %v", err)
-		}
-	}()
-
-	return m.listenForMessages()
+	return tea.Batch(
+		func() tea.Msg {
+			err := m.sessionClient.Connect(ctx, m.userID, m.messageCh)
+			if err != nil {
+				st, ok := status.FromError(err)
+				if ok && st.Code() == codes.Unavailable {
+					return serverErrorMsg("서버에 연결할 수 없습니다.")
+				}
+				return serverErrorMsg(fmt.Sprintf("Connect failed: %v", err))
+			}
+			return nil
+		},
+		m.listenForMessages(),
+	)
 }
+
+type serverErrorMsg string
 
 func (m *ChatModel) listenForMessages() tea.Cmd {
 	return func() tea.Msg {
@@ -92,13 +103,20 @@ func (m *ChatModel) listenForMessages() tea.Cmd {
 
 type incomingMessage string
 
+func (m *ChatModel) appendMessage(msg string) {
+	m.messages = append(m.messages, msg)
+	content := strings.Join(m.messages, "\n")
+	m.viewport.SetContent(lipgloss.NewStyle().Width(m.viewport.Width).Render(content))
+	m.viewport.GotoBottom()
+}
+
 func (m *ChatModel) Resize(width, height int) {
 	m.width = width
 	m.height = height
 
 	userListWidth := 20
-	userListVerticalPadding := userListStyle.GetPaddingTop() + userListStyle.GetPaddingBottom()
-	chatViewVerticalPadding := chatViewStyle.GetPaddingTop() + chatViewStyle.GetPaddingBottom()
+	userListVerticalPadding := style.UserListStyle.GetPaddingTop() + style.UserListStyle.GetPaddingBottom()
+	chatViewVerticalPadding := style.ChatViewStyle.GetPaddingTop() + style.ChatViewStyle.GetPaddingBottom()
 
 	m.textarea.SetWidth(m.width - userListWidth - gap*2 - 4)
 	m.textarea.SetHeight(3)
@@ -152,7 +170,7 @@ func (m *ChatModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.focusArea == "textarea" {
 				input := m.textarea.Value()
 				if strings.TrimSpace(input) != "" {
-					m.messages = append(m.messages, senderStyle.Render("You: ")+input)
+					m.messages = append(m.messages, style.SenderStyle.Render("You: ")+input)
 					content := strings.Join(m.messages, "\n")
 					m.viewport.SetContent(lipgloss.NewStyle().Width(m.viewport.Width).Render(content))
 					m.textarea.Reset()
@@ -162,11 +180,12 @@ func (m *ChatModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 	case incomingMessage:
-		m.messages = append(m.messages, senderStyle.Render("Server: ")+string(msg))
-		content := strings.Join(m.messages, "\n")
-		m.viewport.SetContent(lipgloss.NewStyle().Width(m.viewport.Width).Render(content))
-		m.viewport.GotoBottom()
+		m.appendMessage(style.SenderStyle.Render("Server: ") + string(msg))
+
 		return m, m.listenForMessages()
+	case serverErrorMsg:
+		m.appendMessage(style.ErrorStyle.Render("[LOG] ") + string(msg))
+		return m, nil
 	}
 
 	if m.focusArea == "textarea" {
@@ -182,7 +201,7 @@ func (m *ChatModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m *ChatModel) View() string {
-	userView := userListStyle.Render(m.users.View())
-	rightView := chatViewStyle.Render(m.viewport.View() + "\n\n" + m.textarea.View())
+	userView := style.UserListStyle.Render(m.users.View())
+	rightView := style.ChatViewStyle.Render(m.viewport.View() + "\n\n" + m.textarea.View())
 	return lipgloss.JoinHorizontal(lipgloss.Top, userView, rightView)
 }

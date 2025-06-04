@@ -29,7 +29,7 @@ func NewSessionServiceServer(logger lib.Logger) pb.SessionServiceServer {
 func (s *sessionServiceServer) Connect(req *pb.ConnectRequest, stream pb.SessionService_ConnectServer) error {
 	userID := req.GetUserId()
 
-	log.Printf("User connected: %s", userID)
+	s.logger.Debugf("User connected: %s", userID)
 
 	s.sessions.Store(userID, &Session{
 		UserID: userID,

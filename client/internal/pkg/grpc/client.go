@@ -58,7 +58,7 @@ func (c *sessionClient) Connect(ctx context.Context, userID string, messageCh ch
 		for {
 			msg, err := stream.Recv()
 			if err != nil {
-				if errors.Is(err, io.EOF) || status.Code(err) == codes.Canceled {
+				if errors.Is(err, io.EOF) || status.Code(err) == codes.Canceled || status.Code(err) == codes.Unavailable {
 					c.logger.Info("session stream closed")
 					return
 				}

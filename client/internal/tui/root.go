@@ -2,23 +2,9 @@ package tui
 
 import (
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
 )
 
 const gap = 1
-
-var (
-	userListStyle = lipgloss.NewStyle().
-			Width(20).
-			Padding(1, 1).
-			Border(lipgloss.NormalBorder())
-
-	chatViewStyle = lipgloss.NewStyle().
-			Padding(1, 1).
-			Border(lipgloss.NormalBorder())
-
-	senderStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("5"))
-)
 
 type state int
 
@@ -32,7 +18,6 @@ type RootModel struct {
 	state      state
 	width      int
 	height     int
-	messages   []string
 	chatModel  *ChatModel
 	loginModel *LoginModel
 	TeaProgram *tea.Program
@@ -41,7 +26,6 @@ type RootModel struct {
 func NewRootModel(login *LoginModel, chat *ChatModel) *RootModel {
 	return &RootModel{
 		state:      stateLogin,
-		messages:   []string{},
 		loginModel: login,
 		chatModel:  chat,
 	}
