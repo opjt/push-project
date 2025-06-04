@@ -67,6 +67,7 @@ func (r *RootModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if r.loginModel.loggedIn {
 			r.state = stateChat
 			r.chatModel.Resize(r.width, r.height)
+			return r, r.chatModel.Init()
 		}
 		return r, cmd
 
@@ -83,7 +84,6 @@ func (r *RootModel) View() string {
 	case stateLogin:
 		return r.loginModel.View()
 	case stateChat:
-
 		return r.chatModel.View()
 	}
 	return ""

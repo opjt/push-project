@@ -1,7 +1,7 @@
 package main
 
 import (
-	"push/sender/internal/core"
+	"push/dispatcher/internal/core"
 )
 
 func main() {

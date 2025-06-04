@@ -111,7 +111,7 @@ func (m *LoginModel) View() string {
 func validateUserCmd(username string) tea.Cmd {
 	return func() tea.Msg {
 		time.Sleep(time.Second) // TODO: 실제 api 로 변경
-		if username == "validuser" {
+		if username == "test" {
 			return userValidatedMsg{}
 		}
 		return userInvalidMsg{err: errors.New("user not found")}

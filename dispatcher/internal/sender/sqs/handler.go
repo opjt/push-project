@@ -4,8 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"push/common/lib"
-	"push/sender/internal/sender/dto"
-	"push/sender/internal/sender/grpc"
+	"push/dispatcher/internal/sender/dto"
+	"push/dispatcher/internal/sender/grpc"
 	"time"
 
 	pb "push/linker/api/proto"

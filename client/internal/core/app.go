@@ -16,6 +16,7 @@ func RunApp() {
 	teaDone := make(chan struct{})
 
 	app := fx.New(
+		Modules,
 		fx.Provide(
 			tui.NewLoginModel,
 			tui.NewChatModel,

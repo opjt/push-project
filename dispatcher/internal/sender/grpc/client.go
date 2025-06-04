@@ -22,9 +22,9 @@ type MessageClient interface {
 }
 
 // grpc client 생성자
-func NewMessageServiceClient(logger lib.Logger, lc fx.Lifecycle) (MessageClient, error) {
+func NewMessageServiceClient(logger lib.Logger, lc fx.Lifecycle, env lib.Env) (MessageClient, error) {
 	// Linker gRPC 연결.
-	clientConn, err := grpc.NewClient("localhost:50051", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	clientConn, err := grpc.NewClient("localhost:"+env.Linker.GrpcPort, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create gRPC client: %w", err)
 

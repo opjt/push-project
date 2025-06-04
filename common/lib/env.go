@@ -10,11 +10,12 @@ import (
 )
 
 type Env struct {
-	Log    Log    `env:", prefix=LOG_"`
-	App    App    `env:", prefix=APP_"`
-	Aws    Aws    `env:", prefix=AWS_"`
-	Linker Linker `env:", prefix=LINKER_"`
-	DB     DB     `env:", prefix=MARIA_"`
+	Log        Log        `env:", prefix=LOG_"`
+	App        App        `env:", prefix=APP_"`
+	Aws        Aws        `env:", prefix=AWS_"`
+	Linker     Linker     `env:", prefix=LINKER_"`
+	Dispatcher Dispatcher `env:", prefix=DP_"`
+	DB         DB         `env:", prefix=MARIA_"`
 }
 
 type App struct {
@@ -32,6 +33,10 @@ type Aws struct {
 type Linker struct {
 	HttpPort string `env:"HTTP_PORT, default=8880"`
 	GrpcPort string `env:"GRPC_PORT, default=50051"`
+}
+
+type Dispatcher struct {
+	SessionPort string `env:"SESSION_PORT, default=50052"`
 }
 
 type DB struct {

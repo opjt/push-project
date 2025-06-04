@@ -1,8 +1,8 @@
 package sender
 
 import (
-	"push/sender/internal/sender/grpc"
-	"push/sender/internal/sender/sqs"
+	"push/dispatcher/internal/sender/grpc"
+	"push/dispatcher/internal/sender/sqs"
 
 	"go.uber.org/fx"
 )

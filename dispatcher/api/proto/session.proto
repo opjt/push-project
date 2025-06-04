@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package session;
+option go_package = "dispatcher/api/proto;proto";
+
+service SessionService {
+  rpc Connect(ConnectRequest) returns (stream ServerMessage);
+}
+
+message ConnectRequest {
+  string user_id = 1;
+}
+
+message ServerMessage {
+  string message = 1;
+}
