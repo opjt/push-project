@@ -55,11 +55,11 @@ func (c *sessionClient) Connect(ctx context.Context, userID string, messageCh ch
 
 	// 메시지 수신 고루틴
 	go func() {
+		defer close(messageCh)
 		for {
 			msg, err := stream.Recv()
 			if err != nil {
 				if errors.Is(err, io.EOF) || status.Code(err) == codes.Canceled || status.Code(err) == codes.Unavailable {
-					c.logger.Info("session stream closed")
 					return
 				}
 				c.logger.Errorf("error receiving from stream: %v", err)

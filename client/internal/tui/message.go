@@ -74,29 +74,35 @@ func NewChatModel(logger lib.Logger, client grpc.SessionClient) *ChatModel {
 	}
 }
 func (m *ChatModel) Init() tea.Cmd {
-	ctx := context.Background()
 
 	return tea.Batch(
-		func() tea.Msg {
-			err := m.sessionClient.Connect(ctx, m.userID, m.messageCh)
-			if err != nil {
-				st, ok := status.FromError(err)
-				if ok && st.Code() == codes.Unavailable {
-					return serverErrorMsg("서버에 연결할 수 없습니다.")
-				}
-				return serverErrorMsg(fmt.Sprintf("Connect failed: %v", err))
-			}
-			return nil
-		},
+		m.connectSession(),
 		m.listenForMessages(),
 	)
 }
 
 type serverErrorMsg string
 
+func (m *ChatModel) connectSession() tea.Cmd {
+	return func() tea.Msg {
+		err := m.sessionClient.Connect(context.Background(), m.userID, m.messageCh)
+		if err != nil {
+			st, ok := status.FromError(err)
+			if ok && st.Code() == codes.Unavailable {
+				return serverErrorMsg("서버에 연결할 수 없습니다.")
+			}
+			return serverErrorMsg(fmt.Sprintf("Connect failed: %v", err))
+		}
+		return nil
+	}
+}
 func (m *ChatModel) listenForMessages() tea.Cmd {
 	return func() tea.Msg {
-		msg := <-m.messageCh
+		msg, ok := <-m.messageCh
+		if !ok {
+			return serverErrorMsg("채널이 종료되었습니다.")
+
+		}
 		return incomingMessage(msg)
 	}
 }

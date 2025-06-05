@@ -2,10 +2,8 @@ package core
 
 import (
 	"context"
-	"os"
-	"os/signal"
 	"push/common/lib"
-	"syscall"
+	"time"
 
 	"go.uber.org/fx"
 	"go.uber.org/fx/fxevent"
@@ -28,17 +26,13 @@ func RunServer(opt fx.Option) {
 		logger.Fatal("Failed to start app:", err)
 	}
 
-	// signal handling은 여기에 작성
-	go func() {
-		sig := make(chan os.Signal, 1)
-		signal.Notify(sig, syscall.SIGINT, syscall.SIGTERM)
-		<-sig
-		app.Stop(context.Background())
-	}()
-
+	// 시그널 대기
 	<-app.Done()
-	logger.Info("app is done")
-	if err := app.Stop(ctx); err != nil {
-		logger.Fatal("Failed to stop app:", err)
+
+	stopCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	if err := app.Stop(stopCtx); err != nil {
+		logger.Error("Failed to stop app gracefully:", err)
 	}
 }
