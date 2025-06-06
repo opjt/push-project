@@ -17,6 +17,7 @@ func NewGRPCServer() *grpc.Server {
 }
 
 func RegisterGRPCServer(lc fx.Lifecycle, grpcServer *grpc.Server, service pb.SessionServiceServer, log lib.Logger, env lib.Env) {
+	svc := service.(*sessionServiceServer) // 타입 캐스팅
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
 			lis, err := net.Listen("tcp", ":"+env.Dispatcher.SessionPort)
@@ -36,6 +37,7 @@ func RegisterGRPCServer(lc fx.Lifecycle, grpcServer *grpc.Server, service pb.Ses
 			return nil
 		},
 		OnStop: func(ctx context.Context) error {
+			close(svc.shutdownCh)
 			grpcServer.GracefulStop()
 			log.Debug("gRPC server stopped gracefully")
 			return nil

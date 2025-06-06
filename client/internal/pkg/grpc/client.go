@@ -65,6 +65,9 @@ func (c *sessionClient) Connect(ctx context.Context, userID string, messageCh ch
 				c.logger.Errorf("error receiving from stream: %v", err)
 				return
 			}
+			if msg.GetMessage() == "__shutdown__" {
+				return
+			}
 
 			// 받은 메시지를 채널로 전달
 			messageCh <- msg.GetMessage()
