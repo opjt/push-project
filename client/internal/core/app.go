@@ -4,19 +4,24 @@ import (
 	"context"
 	"log"
 	"push/client/internal/tui"
+	"push/common/lib"
 
 	tea "github.com/charmbracelet/bubbletea"
 
 	"go.uber.org/fx"
+	"go.uber.org/fx/fxevent"
 )
 
 func RunApp() {
 
 	// Bubble Tea 종료 알림 채널 생성
 	teaDone := make(chan struct{})
-
+	logger := lib.GetLogger()
 	app := fx.New(
 		Modules,
+		fx.WithLogger(func() fxevent.Logger {
+			return logger.GetFxLogger()
+		}),
 		fx.Provide(
 			tui.NewLoginModel,
 			tui.NewChatModel,
@@ -29,14 +34,14 @@ func RunApp() {
 						p := tea.NewProgram(root, tea.WithAltScreen())
 						root.TeaProgram = p
 						if _, err := p.Run(); err != nil {
-							log.Println("Bubble Tea exited:", err)
+							logger.Error("Bubble Tea exited:", err)
 						}
 						close(teaDone) // 종료 알림
 					}()
 					return nil
 				},
 				OnStop: func(ctx context.Context) error {
-					log.Println("App is stopping... cleaning resources")
+					logger.Debug("App is stopping...")
 					return nil
 				},
 			})

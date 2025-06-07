@@ -39,7 +39,7 @@ func NewSessionServiceClient(logger lib.Logger, lc fx.Lifecycle, env lib.Env) (S
 
 	lc.Append(fx.Hook{
 		OnStop: func(ctx context.Context) error {
-			logger.Info("closing gRPC session client")
+			logger.Debug("closing gRPC session client")
 			return clientConn.Close()
 		},
 	})
