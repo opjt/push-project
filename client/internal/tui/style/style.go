@@ -14,4 +14,5 @@ var (
 
 	SenderStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("5"))
 	ErrorStyle  = lipgloss.NewStyle().Foreground(lipgloss.Color("9"))
+	InfoStyle   = lipgloss.NewStyle().Foreground(lipgloss.Color("36"))
 )

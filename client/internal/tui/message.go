@@ -31,6 +31,7 @@ type ChatModel struct {
 	sessionClient grpc.SessionClient
 	messageCh     chan string
 	userID        string
+	sessionActive bool
 }
 
 func NewChatModel(logger lib.Logger, client grpc.SessionClient) *ChatModel {
@@ -71,6 +72,7 @@ func NewChatModel(logger lib.Logger, client grpc.SessionClient) *ChatModel {
 		sessionClient: client,
 		messageCh:     make(chan string),
 		userID:        "client1", // 실제 사용자 ID로 교체 필요
+		sessionActive: false,
 	}
 }
 func (m *ChatModel) Init() tea.Cmd {
@@ -93,6 +95,7 @@ func (m *ChatModel) connectSession() tea.Cmd {
 			}
 			return serverErrorMsg(fmt.Sprintf("Connect failed: %v", err))
 		}
+		m.sessionActive = true
 		return nil
 	}
 }
@@ -100,6 +103,7 @@ func (m *ChatModel) listenForMessages() tea.Cmd {
 	return func() tea.Msg {
 		msg, ok := <-m.messageCh
 		if !ok {
+			m.sessionActive = false
 			return serverErrorMsg("채널이 종료되었습니다.")
 
 		}
@@ -117,6 +121,7 @@ func (m *ChatModel) appendMessage(msg string) {
 }
 
 func (m *ChatModel) Resize(width, height int) {
+	// TODO: 매직넘버 줄이고 레이아웃 구성.
 	m.width = width
 	m.height = height
 
@@ -128,10 +133,10 @@ func (m *ChatModel) Resize(width, height int) {
 	m.textarea.SetHeight(3)
 
 	m.viewport.Width = m.width - userListWidth - gap*2 - 4
-	m.viewport.Height = m.height - m.textarea.Height() - gap - chatViewVerticalPadding - 2
+	m.viewport.Height = m.height - m.textarea.Height() - gap - chatViewVerticalPadding - 4
 
 	m.users.SetWidth(userListWidth)
-	m.users.SetHeight(m.height - userListVerticalPadding - 3)
+	m.users.SetHeight(m.height - userListVerticalPadding - 5)
 
 	if m.focusArea == "textarea" {
 		m.textarea.Focus()
@@ -162,6 +167,13 @@ func (m *ChatModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.Type {
 		case tea.KeyCtrlC, tea.KeyEsc:
 			return m, tea.Quit
+		case tea.KeyCtrlR:
+			m.appendMessage(style.InfoStyle.Render("세션 재연결을 시도합니다."))
+			m.messageCh = make(chan string) // 새 채널로 갱신
+			return m, tea.Batch(
+				m.connectSession(),
+				m.listenForMessages(),
+			)
 
 		case tea.KeyTab:
 			if m.focusArea == "textarea" {
@@ -209,5 +221,15 @@ func (m *ChatModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m *ChatModel) View() string {
 	userView := style.UserListStyle.Render(m.users.View())
 	rightView := style.ChatViewStyle.Render(m.viewport.View() + "\n\n" + m.textarea.View())
-	return lipgloss.JoinHorizontal(lipgloss.Top, userView, rightView)
+
+	status := "🔴 연결 끊김"
+	if m.sessionActive {
+		status = "🟢 연결됨"
+	}
+	statusView := lipgloss.NewStyle().
+		Foreground(lipgloss.Color("#888")).
+		Italic(true).
+		Render(fmt.Sprintf("\n\n상태: %s", status))
+
+	return lipgloss.JoinHorizontal(lipgloss.Top, userView, rightView) + statusView
 }

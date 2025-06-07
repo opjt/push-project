@@ -36,7 +36,14 @@ func (s *sessionServiceServer) Connect(req *pb.ConnectRequest, stream pb.Session
 		Stream: stream,
 	})
 	defer s.sessions.Delete(userID)
-
+	// Connect 직후 첫 메시지 전송
+	err := stream.Send(&pb.ServerMessage{
+		Message: fmt.Sprintf("Welcome %s! [%s]", userID, time.Now().Format(time.RFC3339)),
+	})
+	if err != nil {
+		s.logger.Errorf("Initial stream send error for %s: %v", userID, err)
+		return err
+	}
 	ticker := time.NewTicker(5 * time.Second)
 	defer ticker.Stop()
 
@@ -47,6 +54,7 @@ func (s *sessionServiceServer) Connect(req *pb.ConnectRequest, stream pb.Session
 			_ = stream.Send(&pb.ServerMessage{Message: "__shutdown__"})
 			return nil
 		case <-stream.Context().Done():
+			s.logger.Debugf("User disconnected: %s", userID)
 			return nil
 		case <-ticker.C:
 			err := stream.Send(&pb.ServerMessage{
