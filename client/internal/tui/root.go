@@ -41,7 +41,6 @@ func (r *RootModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		r.width = msg.Width
 		r.height = msg.Height
-		return r, nil
 	}
 	switch r.state {
 	case stateLogin:
