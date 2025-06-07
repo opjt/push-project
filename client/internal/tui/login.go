@@ -2,6 +2,7 @@ package tui
 
 import (
 	"push/client/internal/pkg/httpclient/auth"
+	"push/client/internal/tui/state"
 	"push/linker/dto"
 	"strings"
 
@@ -18,13 +19,13 @@ type userInvalidMsg error
 type LoginModel struct {
 	textInput textinput.Model
 	loggedIn  bool
-	userInfo  *User
+	userInfo  *state.User
 	warning   string
 	loading   bool
 	spinner   spinner.Model
 }
 
-func NewLoginModel() *LoginModel {
+func NewLoginModel(user *state.User) *LoginModel {
 	ti := textinput.New()
 	ti.Placeholder = "Enter username"
 	ti.Focus()
@@ -38,7 +39,7 @@ func NewLoginModel() *LoginModel {
 	return &LoginModel{
 		textInput: ti,
 		spinner:   s,
-		userInfo:  &User{},
+		userInfo:  user,
 	}
 }
 
@@ -121,7 +122,8 @@ func validateUserCmd(m *LoginModel, username string) tea.Cmd {
 			return userInvalidMsg(err)
 		}
 
-		*m.userInfo = User{userId: res.UserId}
+		// *m.userInfo = state.User{UserId: res.UserId}
+		m.userInfo.UserId = res.UserId
 
 		return userValidatedMsg{}
 	}

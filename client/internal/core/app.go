@@ -22,11 +22,6 @@ func RunApp() {
 		fx.WithLogger(func() fxevent.Logger {
 			return logger.GetFxLogger()
 		}),
-		fx.Provide(
-			tui.NewLoginModel,
-			tui.NewChatModel,
-			tui.NewRootModel,
-		),
 		fx.Invoke(func(lc fx.Lifecycle, root *tui.RootModel) {
 			lc.Append(fx.Hook{
 				OnStart: func(ctx context.Context) error {

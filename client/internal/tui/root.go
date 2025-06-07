@@ -6,16 +6,16 @@ import (
 
 const gap = 1
 
-type state int
+type viewState int
 
 const (
-	stateLogin state = iota
+	stateLogin viewState = iota
 	stateChat
 )
 
 // RootModel: 전체 앱 상태를 관리, 로그인 성공 시 상태 전환 처리
 type RootModel struct {
-	state      state
+	state      viewState
 	width      int
 	height     int
 	chatModel  *ChatModel
