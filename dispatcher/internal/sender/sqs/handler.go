@@ -48,7 +48,7 @@ func (h *handler) HandleMessage(ctx context.Context, msg types.Message) error {
 	// 이후 pushMsg 처리
 
 	// 세션에서 사용자 ID로 세션을 가져옴
-	sess, ok := h.manager.Get("client1")
+	sess, ok := h.manager.Get("client1") // TODO: 하드코딩 제거, 세션아이디로 세션 갖고오도록 수정 필요.
 	if !ok {
 		h.log.Warnf("No active session for user %s", pushMsg.UserID)
 		return nil // 혹은 사용자 접속 없음 에러 반환

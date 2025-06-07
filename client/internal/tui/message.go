@@ -18,6 +18,9 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+type User struct {
+	userId string
+}
 type ChatModel struct {
 	users     list.Model
 	viewport  viewport.Model
@@ -30,7 +33,7 @@ type ChatModel struct {
 
 	sessionClient grpc.SessionClient
 	messageCh     chan string
-	userID        string
+	user          *User
 	sessionActive bool
 }
 
@@ -71,7 +74,7 @@ func NewChatModel(logger lib.Logger, client grpc.SessionClient) *ChatModel {
 		logger:        logger,
 		sessionClient: client,
 		messageCh:     make(chan string),
-		userID:        "client1", // 실제 사용자 ID로 교체 필요
+		user:          &User{},
 		sessionActive: false,
 	}
 }
@@ -87,7 +90,7 @@ type serverErrorMsg string
 
 func (m *ChatModel) connectSession() tea.Cmd {
 	return func() tea.Msg {
-		err := m.sessionClient.Connect(context.Background(), m.userID, m.messageCh)
+		err := m.sessionClient.Connect(context.Background(), m.user.userId, m.messageCh)
 		if err != nil {
 			st, ok := status.FromError(err)
 			if ok && st.Code() == codes.Unavailable {
@@ -229,7 +232,7 @@ func (m *ChatModel) View() string {
 	statusView := lipgloss.NewStyle().
 		Foreground(lipgloss.Color("#888")).
 		Italic(true).
-		Render(fmt.Sprintf("\n\n상태: %s", status))
+		Render(fmt.Sprintf("\n\n(%s) 상태: %s", m.user.userId, status))
 
 	return lipgloss.JoinHorizontal(lipgloss.Top, userView, rightView) + statusView
 }

@@ -1,9 +1,9 @@
 package tui
 
 import (
-	"errors"
+	"push/client/internal/pkg/httpclient/auth"
+	"push/linker/dto"
 	"strings"
-	"time"
 
 	"github.com/charmbracelet/bubbles/spinner"
 	"github.com/charmbracelet/bubbles/textinput"
@@ -13,11 +13,12 @@ import (
 
 // 인증 결과 메시지
 type userValidatedMsg struct{}
-type userInvalidMsg struct{ err error }
+type userInvalidMsg error
 
 type LoginModel struct {
 	textInput textinput.Model
 	loggedIn  bool
+	userInfo  *User
 	warning   string
 	loading   bool
 	spinner   spinner.Model
@@ -37,6 +38,7 @@ func NewLoginModel() *LoginModel {
 	return &LoginModel{
 		textInput: ti,
 		spinner:   s,
+		userInfo:  &User{},
 	}
 }
 
@@ -69,7 +71,7 @@ func (m *LoginModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.warning = ""
 			m.loading = true
 			m.textInput.Blur()
-			return m, tea.Batch(validateUserCmd(username), m.spinner.Tick)
+			return m, tea.Batch(validateUserCmd(m, username), m.spinner.Tick)
 
 		case tea.KeyCtrlC, tea.KeyEsc:
 			return m, tea.Quit
@@ -85,7 +87,7 @@ func (m *LoginModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.loggedIn = false
 		m.loading = false
 		m.textInput.Focus()
-		m.warning = "Invalid username: " + msg.err.Error()
+		m.warning = "Invalid username: " + msg.Error()
 		m.textInput.Reset()
 		return m, nil
 	}
@@ -108,12 +110,19 @@ func (m *LoginModel) View() string {
 	return lipgloss.NewStyle().Padding(2, 4).Render(content)
 }
 
-func validateUserCmd(username string) tea.Cmd {
+func validateUserCmd(m *LoginModel, username string) tea.Cmd {
 	return func() tea.Msg {
-		time.Sleep(time.Second) // TODO: 실제 api 로 변경
-		if username == "test" {
-			return userValidatedMsg{}
+		req := dto.AuthLoginReq{
+			UserId: username,
 		}
-		return userInvalidMsg{err: errors.New("user not found")}
+
+		res, err := auth.AuthLogin(req)
+		if err != nil {
+			return userInvalidMsg(err)
+		}
+
+		*m.userInfo = User{userId: res.UserId}
+
+		return userValidatedMsg{}
 	}
 }

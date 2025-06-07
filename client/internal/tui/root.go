@@ -33,6 +33,8 @@ func NewRootModel(login *LoginModel, chat *ChatModel) *RootModel {
 
 func (r *RootModel) Init() tea.Cmd {
 	// 로그인 모델 초기화
+	r.chatModel.user = r.loginModel.userInfo
+
 	return r.loginModel.Init()
 }
 
