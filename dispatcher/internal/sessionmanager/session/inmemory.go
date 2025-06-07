@@ -27,6 +27,17 @@ func (m *InMemoryManager) Remove(userID string) {
 	m.sessions.Delete(userID)
 }
 
+func (m *InMemoryManager) Get(userID string) (*Session, bool) {
+	value, ok := m.sessions.Load(userID)
+	if !ok {
+		return nil, false
+	}
+	sess, ok := value.(*Session)
+	if !ok {
+		return nil, false
+	}
+	return sess, true
+}
 func (m *InMemoryManager) SendTo(userID string, msg *pb.ServerMessage) error {
 	val, ok := m.sessions.Load(userID)
 	if !ok {

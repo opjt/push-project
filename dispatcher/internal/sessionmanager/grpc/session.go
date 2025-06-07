@@ -54,14 +54,14 @@ func (s *sessionServiceServer) Connect(req *pb.ConnectRequest, stream pb.Session
 			s.logger.Debugf("User disconnected: %s", userID)
 			return nil
 
-		case <-ticker.C:
-			err := s.sessions.SendTo(userID, &pb.ServerMessage{
-				Message: fmt.Sprintf("Hello %s! [%s]", userID, time.Now().Format(time.RFC3339)),
-			})
-			if err != nil {
-				s.logger.Errorf("Stream error for %s: %v", userID, err)
-				return err
-			}
+			// case <-ticker.C:
+			// 	err := s.sessions.SendTo(userID, &pb.ServerMessage{
+			// 		Message: fmt.Sprintf("Hello %s! [%s]", userID, time.Now().Format(time.RFC3339)),
+			// 	})
+			// 	if err != nil {
+			// 		s.logger.Errorf("Stream error for %s: %v", userID, err)
+			// 		return err
+			// 	}
 		}
 	}
 }

@@ -2,6 +2,7 @@ package sqs
 
 import (
 	"context"
+	"errors"
 	"push/common/lib"
 	"push/common/pkg/awsinfra"
 
@@ -72,6 +73,11 @@ func (c *Consumer) start() {
 func (c *Consumer) poll() {
 	messages, err := c.receiveMessages()
 	if err != nil {
+		// context.Canceled 에러는 종료 시 발생하는 정상적 상황
+		if errors.Is(err, context.Canceled) {
+			c.log.Info("ReceiveMessage canceled due to context cancellation")
+			return
+		}
 		c.log.Errorf("ReceiveMessage failed: %v", err)
 		return
 	}

@@ -6,8 +6,10 @@ import (
 	"push/common/lib"
 	"push/dispatcher/internal/sender/dto"
 	"push/dispatcher/internal/sender/grpc"
+	"push/dispatcher/internal/sessionmanager/session"
 	"time"
 
+	pbs "push/dispatcher/api/proto"
 	pb "push/linker/api/proto"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -21,12 +23,14 @@ type Handler interface {
 type handler struct {
 	log     lib.Logger
 	mclient grpc.MessageClient
+	manager session.Manager
 }
 
-func NewHandler(log lib.Logger, mclient grpc.MessageClient) Handler {
+func NewHandler(log lib.Logger, mclient grpc.MessageClient, manager session.Manager) Handler {
 	return &handler{
 		log:     log,
 		mclient: mclient,
+		manager: manager,
 	}
 }
 
@@ -42,6 +46,22 @@ func (h *handler) HandleMessage(ctx context.Context, msg types.Message) error {
 	defer cancel()
 	h.mclient.UpdateStatus(ctx, &pb.ReqUpdateStatus{Id: uint64(pushMsg.MsgID), SnsMsgId: *msg.MessageId, Status: "sending"})
 	// 이후 pushMsg 처리
+
+	// 세션에서 사용자 ID로 세션을 가져옴
+	sess, ok := h.manager.Get("client1")
+	if !ok {
+		h.log.Warnf("No active session for user %s", pushMsg.UserID)
+		return nil // 혹은 사용자 접속 없음 에러 반환
+	}
+
+	// 세션에 메시지 전송 (동기적)
+	err = sess.Send(&pbs.ServerMessage{
+		Message: pushMsg.Body,
+	})
+	if err != nil {
+		h.log.Errorf("Failed to send message to user %s: %v", pushMsg.UserID, err)
+		return err
+	}
 	return nil
 }
 

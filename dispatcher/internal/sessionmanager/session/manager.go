@@ -25,6 +25,7 @@ func (s *Session) Send(msg *pb.ServerMessage) error {
 type Manager interface {
 	Add(userID string, stream pb.SessionService_ConnectServer)
 	Remove(userID string)
+	Get(userID string) (*Session, bool)
 	SendTo(userID string, msg *pb.ServerMessage) error
 	Len() int
 }
