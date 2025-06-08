@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"push/client/internal/tui/state"
 	"push/common/lib"
 	pb "push/dispatcher/api/proto"
 
@@ -21,7 +22,7 @@ type sessionClient struct {
 }
 
 type SessionClient interface {
-	Connect(context.Context, string, chan<- string) error
+	Connect(context.Context, state.User, chan<- string) error
 }
 
 func NewSessionServiceClient(logger lib.Logger, lc fx.Lifecycle, env lib.Env) (SessionClient, error) {
@@ -47,8 +48,8 @@ func NewSessionServiceClient(logger lib.Logger, lc fx.Lifecycle, env lib.Env) (S
 	return c, nil
 }
 
-func (c *sessionClient) Connect(ctx context.Context, userID string, messageCh chan<- string) error {
-	stream, err := c.client.Connect(ctx, &pb.ConnectRequest{UserId: userID})
+func (c *sessionClient) Connect(ctx context.Context, user state.User, messageCh chan<- string) error {
+	stream, err := c.client.Connect(ctx, &pb.ConnectRequest{UserId: user.UserId, SessionId: user.SessionId})
 	if err != nil {
 		return fmt.Errorf("failed to connect to session stream: %w", err)
 	}

@@ -10,7 +10,6 @@ import (
 
 func AuthLogin(req dto.AuthLoginReq) (dto.AuthLoginRes, error) {
 	resp, err := httpclient.DoJSONRequest("POST", "http://localhost:8800/api/v1/auth/login", req)
-	fmt.Println(string(resp.Body))
 	if err != nil {
 		return dto.AuthLoginRes{}, fmt.Errorf("failed to login: %w", err)
 	}

@@ -6,5 +6,9 @@ import (
 
 var Module = fx.Options(
 
-	fx.Provide(NewInMemoryManager),
+	fx.Provide(
+		NewInMemoryManager,
+		NewInMemoryUserSessionStore,
+		NewSessionFacade,
+	),
 )

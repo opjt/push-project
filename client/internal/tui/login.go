@@ -122,8 +122,8 @@ func validateUserCmd(m *LoginModel, username string) tea.Cmd {
 			return userInvalidMsg(err)
 		}
 
-		// *m.userInfo = state.User{UserId: res.UserId}
 		m.userInfo.UserId = res.UserId
+		m.userInfo.SessionId = res.SessionId
 
 		return userValidatedMsg{}
 	}

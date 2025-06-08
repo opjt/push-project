@@ -4,6 +4,9 @@ import (
 	"context"
 	"push/common/lib"
 	"push/linker/dto"
+
+	"github.com/google/uuid"
+
 	"push/linker/internal/pkg/database"
 	"push/linker/internal/repository"
 )
@@ -36,8 +39,16 @@ func (s *userService) Login(ctx context.Context, loginReq dto.AuthLoginReq) (dto
 	if err != nil {
 		return dto.LoginResult{}, err
 	}
+	uuid := GenUuid()
 	result := dto.LoginResult{
-		UserId: user.Username,
+		UserId:    user.Username,
+		SessionId: uuid,
 	}
 	return result, nil
+}
+
+func GenUuid() string {
+	id := uuid.New() // uuid v4
+	return id.String()
+
 }

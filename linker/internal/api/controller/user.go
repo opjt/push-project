@@ -30,7 +30,6 @@ func (u UserController) Login(c *gin.Context) {
 		return
 	}
 
-	u.logger.Info("로그인 요청:", req)
 	ctx := c.Request.Context()
 
 	loginResult, err := u.service.Login(ctx, req)

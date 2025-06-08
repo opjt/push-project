@@ -6,11 +6,11 @@ type AuthLoginReq struct {
 }
 
 type AuthLoginRes struct {
-	UserId string
-	// Token  string
+	UserId    string
+	SessionId string
 }
 
 type LoginResult struct {
-	UserId string
-	// Token  string
+	UserId    string
+	SessionId string
 }
