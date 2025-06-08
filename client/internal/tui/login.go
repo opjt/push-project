@@ -13,7 +13,7 @@ import (
 )
 
 // 인증 결과 메시지
-type userValidatedMsg struct{}
+type userValidatedLogin struct{}
 type userInvalidMsg error
 
 type LoginModel struct {
@@ -78,7 +78,7 @@ func (m *LoginModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		}
 
-	case userValidatedMsg:
+	case userValidatedLogin:
 		m.loggedIn = true
 		m.loading = false
 		m.warning = ""
@@ -88,7 +88,7 @@ func (m *LoginModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.loggedIn = false
 		m.loading = false
 		m.textInput.Focus()
-		m.warning = "Invalid username: " + msg.Error()
+		m.warning = msg.Error()
 		m.textInput.Reset()
 		return m, nil
 	}
@@ -126,6 +126,6 @@ func validateUserCmd(m *LoginModel, username string) tea.Cmd {
 		m.userInfo.Username = res.Username
 		m.userInfo.SessionId = res.SessionId
 
-		return userValidatedMsg{}
+		return userValidatedLogin{}
 	}
 }

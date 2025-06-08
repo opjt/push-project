@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"push/client/internal/pkg/httpclient"
+	commonDto "push/common/dto"
 	"push/linker/dto"
 )
 
@@ -15,19 +16,17 @@ func AuthLogin(req dto.AuthLoginReq) (dto.AuthLoginRes, error) {
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		var errResp struct { //TODO: 공통 response
-			Error string `json:"error"`
-		}
+		var errResp commonDto.CommonResponse[any]
 		if err := json.Unmarshal(resp.Body, &errResp); err != nil {
 			return dto.AuthLoginRes{}, fmt.Errorf("login failed with unknown error: %s", string(resp.Body))
 		}
 		return dto.AuthLoginRes{}, fmt.Errorf("login failed: %s", errResp.Error)
 	}
 
-	var loginRes dto.AuthLoginRes
-	if err := json.Unmarshal(resp.Body, &loginRes); err != nil {
+	var commonResp commonDto.CommonResponse[dto.AuthLoginRes]
+	if err := json.Unmarshal(resp.Body, &commonResp); err != nil {
 		return dto.AuthLoginRes{}, fmt.Errorf("failed to parse login response: %w", err)
 	}
 
-	return loginRes, nil
+	return commonResp.Data, nil
 }

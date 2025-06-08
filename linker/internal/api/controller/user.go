@@ -2,6 +2,7 @@ package controller
 
 import (
 	"net/http"
+	commondto "push/common/dto"
 	"push/common/lib"
 	"push/linker/dto"
 	"push/linker/internal/service"
@@ -31,13 +32,14 @@ func (u UserController) Login(c *gin.Context) {
 	}
 
 	ctx := c.Request.Context()
-
+	res := commondto.CommonResponse[dto.AuthLoginRes]{}
 	loginResult, err := u.service.Login(ctx, req)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		res.Error = err.Error()
+		c.JSON(http.StatusUnauthorized, res)
 		return
 	}
-	res := dto.AuthLoginRes(loginResult)
 
+	res.Data = dto.AuthLoginRes(loginResult)
 	c.JSON(http.StatusOK, res)
 }
