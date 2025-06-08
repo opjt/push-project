@@ -28,7 +28,7 @@ func NewSessionServiceServer(logger lib.Logger, manager session.Manager, userPoo
 func (s *sessionServiceServer) Connect(req *pb.ConnectRequest, stream pb.SessionService_ConnectServer) error {
 	userId := req.GetUserId()
 	sessionId := req.GetSessionId()
-	s.logger.Debugf("User connected: %s - %s", userId, sessionId)
+	s.logger.Debugf("User connected: %d - %s", userId, sessionId)
 
 	// 세션 추가
 	s.sessions.Add(sessionId, stream)
@@ -41,7 +41,7 @@ func (s *sessionServiceServer) Connect(req *pb.ConnectRequest, stream pb.Session
 
 	// Connect 직후 첫 메시지 전송
 	err := stream.Send(&pb.ServerMessage{
-		Message: fmt.Sprintf("Welcome %s! [%s]", userId, time.Now().Format(time.RFC3339)),
+		Message: fmt.Sprintf("Welcome %s! [%s]", sessionId, time.Now().Format(time.RFC3339)),
 	})
 	if err != nil {
 		s.logger.Errorf("Initial stream send error for %s: %v", userId, err)
@@ -56,7 +56,7 @@ func (s *sessionServiceServer) Connect(req *pb.ConnectRequest, stream pb.Session
 			return nil
 
 		case <-stream.Context().Done():
-			s.logger.Debugf("User disconnected: %s", userId)
+			s.logger.Debugf("User disconnected: %s", sessionId)
 			return nil
 		}
 	}

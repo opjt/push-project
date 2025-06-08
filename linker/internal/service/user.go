@@ -35,13 +35,14 @@ func NewUserService(
 }
 
 func (s *userService) Login(ctx context.Context, loginReq dto.AuthLoginReq) (dto.LoginResult, error) {
-	user, err := s.repository.GetUserByUsername(ctx, loginReq.UserId)
+	user, err := s.repository.GetUserByUsername(ctx, loginReq.Username)
 	if err != nil {
 		return dto.LoginResult{}, err
 	}
 	uuid := GenUuid()
 	result := dto.LoginResult{
-		UserId:    user.Username,
+		Username:  user.Username,
+		UserId:    user.ID,
 		SessionId: uuid,
 	}
 	return result, nil

@@ -20,19 +20,19 @@ func NewSessionFacade(sessions Manager, userPool UserSessionPool, logger lib.Log
 }
 
 // 세션 추가
-func (r *SessionFacade) Add(userID, sessionID string, stream pb.SessionService_ConnectServer) {
+func (r *SessionFacade) Add(userID uint64, sessionID string, stream pb.SessionService_ConnectServer) {
 	r.sessions.Add(sessionID, stream)
 	r.userSessionPool.Add(userID, sessionID)
 }
 
 // 세션 제거
-func (r *SessionFacade) Remove(userID, sessionID string) {
+func (r *SessionFacade) Remove(userID uint64, sessionID string) {
 	r.sessions.Remove(sessionID)
 	r.userSessionPool.Remove(userID, sessionID)
 }
 
 // 유저에게 메시지 전송
-func (r *SessionFacade) SendMessageToUser(userID, message string) error {
+func (r *SessionFacade) SendMessageToUser(userID uint64, message string) error {
 	sessionIDs := r.userSessionPool.GetSessionIDs(userID)
 	if len(sessionIDs) == 0 {
 		r.logger.Infof("No active sessions for user %s", userID)

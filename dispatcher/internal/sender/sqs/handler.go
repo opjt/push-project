@@ -53,7 +53,7 @@ func (h *handler) sendPushMessage(pushMsg *dto.PushMessage) error {
 
 	msg := fmt.Sprintf("%s\n%s", pushMsg.Title, pushMsg.Body)
 
-	return h.sessionFacade.SendMessageToUser("test1", msg)
+	return h.sessionFacade.SendMessageToUser(uint64(pushMsg.UserID), msg)
 }
 
 func parseSqsMessage(msg types.Message) (*dto.PushMessage, error) {

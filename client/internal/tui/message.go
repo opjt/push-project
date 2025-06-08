@@ -230,7 +230,7 @@ func (m *ChatModel) View() string {
 	statusView := lipgloss.NewStyle().
 		Foreground(lipgloss.Color("#888")).
 		Italic(true).
-		Render(fmt.Sprintf("\n\n(%s) 상태: %s", m.user.UserId, status))
+		Render(fmt.Sprintf("\n\n(%s) 상태: %s", m.user.Username, status))
 
 	return lipgloss.JoinHorizontal(lipgloss.Top, userView, rightView) + statusView
 }

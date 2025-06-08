@@ -5,9 +5,9 @@ import (
 )
 
 type UserSessionPool interface {
-	Add(userID, sessionID string)
-	Remove(userID, sessionID string)
-	GetSessionIDs(userID string) []string
+	Add(userID uint64, sessionID string)
+	Remove(userID uint64, sessionID string)
+	GetSessionIDs(userID uint64) []string
 }
 
 type userSessionPool struct {
@@ -18,13 +18,13 @@ func NewInMemoryUserSessionStore() UserSessionPool {
 	return &userSessionPool{}
 }
 
-func (s *userSessionPool) Add(userID, sessionID string) {
+func (s *userSessionPool) Add(userID uint64, sessionID string) {
 	val, _ := s.userSessions.LoadOrStore(userID, &sync.Map{})
 	sessionMap := val.(*sync.Map)
 	sessionMap.Store(sessionID, struct{}{})
 }
 
-func (s *userSessionPool) Remove(userID, sessionID string) {
+func (s *userSessionPool) Remove(userID uint64, sessionID string) {
 	val, ok := s.userSessions.Load(userID)
 	if !ok {
 		return
@@ -43,7 +43,7 @@ func (s *userSessionPool) Remove(userID, sessionID string) {
 	}
 }
 
-func (s *userSessionPool) GetSessionIDs(userID string) []string {
+func (s *userSessionPool) GetSessionIDs(userID uint64) []string {
 	val, ok := s.userSessions.Load(userID)
 	if !ok {
 		return nil

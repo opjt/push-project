@@ -1,7 +1,8 @@
 package state
 
 type User struct {
-	UserId    string
+	UserId    uint64
+	Username  string
 	SessionId string
 }
 

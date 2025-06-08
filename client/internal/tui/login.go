@@ -114,7 +114,7 @@ func (m *LoginModel) View() string {
 func validateUserCmd(m *LoginModel, username string) tea.Cmd {
 	return func() tea.Msg {
 		req := dto.AuthLoginReq{
-			UserId: username,
+			Username: username,
 		}
 
 		res, err := auth.AuthLogin(req)
@@ -123,6 +123,7 @@ func validateUserCmd(m *LoginModel, username string) tea.Cmd {
 		}
 
 		m.userInfo.UserId = res.UserId
+		m.userInfo.Username = res.Username
 		m.userInfo.SessionId = res.SessionId
 
 		return userValidatedMsg{}
