@@ -43,14 +43,14 @@ func (h *handler) HandleMessage(ctx context.Context, msg types.Message) error {
 	h.log.Infof("Received push message: %+v", pushMsg)
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
-	h.mclient.UpdateStatus(ctx, &pb.ReqUpdateStatus{Id: uint64(pushMsg.MsgID), SnsMsgId: *msg.MessageId, Status: "sending"})
+	h.mclient.UpdateStatus(ctx, &pb.ReqUpdateStatus{Id: uint64(pushMsg.MsgID), Status: "sending"})
 
 	return h.sendPushMessage(pushMsg)
 }
 
 func (h *handler) sendPushMessage(pushMsg *dto.PushMessage) error {
 
-	return h.sessionFacade.SendMessageToUser(uint64(pushMsg.UserID), pushMsg.Title, pushMsg.Body)
+	return h.sessionFacade.SendMessageToUser(pushMsg)
 }
 
 func parseSqsMessage(msg types.Message) (*dto.PushMessage, error) {

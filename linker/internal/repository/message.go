@@ -37,10 +37,16 @@ func (r *messageRepository) CreateMessage(ctx context.Context, msg *model.Messag
 }
 
 func (r *messageRepository) UpdateMessage(ctx context.Context, msg *model.Message) error {
+	updates := map[string]interface{}{
+		"status": msg.Status,
+	}
+
+	if msg.SnsMsgId != "" {
+		updates["sns_msg_id"] = msg.SnsMsgId
+	}
+
 	return r.db.Model(&model.Message{}).
 		Where("id = ?", msg.ID).
-		Updates(map[string]interface{}{
-			"status":     msg.Status,
-			"sns_msg_id": msg.SnsMsgId,
-		}).Error
+		Updates(updates).Error
+
 }

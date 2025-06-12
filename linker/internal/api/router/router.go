@@ -21,6 +21,7 @@ var Module = fx.Options(
 	fx.Provide(
 		fx.Annotate(NewPushRouter, fx.ResultTags(`group:"Routes"`)),
 		fx.Annotate(NewUserRouter, fx.ResultTags(`group:"Routes"`)),
+		fx.Annotate(NewMessageRouter, fx.ResultTags(`group:"Routes"`)),
 	),
 	fx.Provide(NewRoutes),
 )

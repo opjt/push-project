@@ -26,9 +26,9 @@ func NewPushRouter(
 }
 
 func (r PushRouter) Setup() {
-	msgRoutes := r.engine.ApiGroup.Group("/push")
+	pushRoutes := r.engine.ApiGroup.Group("/push")
 	{
-		msgRoutes.POST("/messages/users/:userid", r.pushController.PostPush)
+		pushRoutes.POST("/messages/users/:userid", r.pushController.PostPush)
 
 	}
 
