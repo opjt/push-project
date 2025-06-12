@@ -12,22 +12,30 @@ import (
 
 	"github.com/charmbracelet/bubbles/list"
 	"github.com/charmbracelet/bubbles/textarea"
-	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
+// 메시지 리스트용 item 타입 정의
+type messageItem struct {
+	title string
+	desc  string
+}
+
+func (m messageItem) FilterValue() string { return m.desc }
+func (m messageItem) Title() string       { return m.title }
+func (m messageItem) Description() string { return m.desc }
+
+// ChatModel 필드 변경: viewport 대신 messagesList
 type ChatModel struct {
-	users     list.Model
-	viewport  viewport.Model
-	textarea  textarea.Model
-	width     int
-	height    int
-	messages  []string
-	focusArea string // "textarea" or "users"
-	logger    lib.Logger
+	messagesList list.Model
+	textarea     textarea.Model
+	width        int
+	height       int
+	focusArea    string // "textarea" or "messages"
+	logger       lib.Logger
 
 	sessionClient grpc.SessionClient
 	messageCh     chan string
@@ -35,19 +43,17 @@ type ChatModel struct {
 	sessionActive bool
 }
 
+// NewChatModel 내 메시지 리스트 초기화
 func NewChatModel(logger lib.Logger, user *state.User, client grpc.SessionClient) *ChatModel {
-	users := []list.Item{
-		style.UserItem("alice"),
-		style.UserItem("bob"),
-		style.UserItem("carol"),
-		style.UserItem("dave"),
-	}
 
-	userList := list.New(users, style.SingleLineDelegate{}, 20, 0)
-	userList.Title = "Users"
-	userList.SetShowStatusBar(false)
-	userList.SetFilteringEnabled(false)
-	userList.DisableQuitKeybindings()
+	// 메시지 리스트 초기 아이템 없음
+	messages := []list.Item{}
+
+	messagesList := list.New(messages, list.NewDefaultDelegate(), 0, 0)
+	messagesList.Title = "Messages"
+	messagesList.SetShowStatusBar(false)
+	messagesList.SetFilteringEnabled(false)
+	messagesList.DisableQuitKeybindings()
 
 	ta := textarea.New()
 	ta.Placeholder = "Send a message..."
@@ -58,17 +64,10 @@ func NewChatModel(logger lib.Logger, user *state.User, client grpc.SessionClient
 	ta.KeyMap.InsertNewline.SetEnabled(false)
 	ta.Blur()
 
-	vp := viewport.New(0, 0)
-	vp.SetContent("Welcome to the chat room!")
-
 	return &ChatModel{
-		users:         userList,
-		viewport:      vp,
+		messagesList:  messagesList,
 		textarea:      ta,
-		messages:      []string{},
 		focusArea:     "textarea",
-		width:         0,
-		height:        0,
 		logger:        logger,
 		sessionClient: client,
 		messageCh:     make(chan string),
@@ -76,15 +75,6 @@ func NewChatModel(logger lib.Logger, user *state.User, client grpc.SessionClient
 		sessionActive: false,
 	}
 }
-func (m *ChatModel) Init() tea.Cmd {
-
-	return tea.Batch(
-		m.connectSession(),
-		m.listenForMessages(),
-	)
-}
-
-type serverErrorMsg string
 
 func (m *ChatModel) connectSession() tea.Cmd {
 	return func() tea.Msg {
@@ -112,53 +102,53 @@ func (m *ChatModel) listenForMessages() tea.Cmd {
 	}
 }
 
-type incomingMessage string
+// 메시지 추가 함수 수정
+func (m *ChatModel) appendMessage(raw string) {
+	// "\n" 기준으로 분리
+	parts := strings.SplitN(raw, "\n", 2)
+	title, desc := "Unknown", raw
+	if len(parts) == 2 {
+		title = parts[0]
+		desc = parts[1]
+	}
 
-func (m *ChatModel) appendMessage(msg string) {
-	m.messages = append(m.messages, msg)
-	content := strings.Join(m.messages, "\n")
-	m.viewport.SetContent(lipgloss.NewStyle().Width(m.viewport.Width).Render(content))
-	m.viewport.GotoBottom()
+	newItem := messageItem{title: title, desc: desc}
+	items := append(m.messagesList.Items(), newItem)
+	m.messagesList.SetItems(items)
+	m.messagesList.Select(len(items) - 1)
 }
 
+// Resize 시 메시지 리스트 크기 조절
 func (m *ChatModel) Resize(width, height int) {
-	// TODO: 매직넘버 줄이고 레이아웃 구성.
 	m.width = width
 	m.height = height
 
-	userListWidth := 20
-	userListVerticalPadding := style.UserListStyle.GetPaddingTop() + style.UserListStyle.GetPaddingBottom()
-	chatViewVerticalPadding := style.ChatViewStyle.GetPaddingTop() + style.ChatViewStyle.GetPaddingBottom()
+	inputHeight := 3
+	m.textarea.SetWidth(m.width - 4) // 좌우 여유 마진
+	m.textarea.SetHeight(inputHeight)
 
-	m.textarea.SetWidth(m.width - userListWidth - gap*2 - 4)
-	m.textarea.SetHeight(3)
-
-	m.viewport.Width = m.width - userListWidth - gap*2 - 4
-	m.viewport.Height = m.height - m.textarea.Height() - gap - chatViewVerticalPadding - 4
-
-	m.users.SetWidth(userListWidth)
-	m.users.SetHeight(m.height - userListVerticalPadding - 5)
+	m.messagesList.SetWidth(m.width - 4)
+	m.messagesList.SetHeight(m.height - inputHeight - 6) // 입력창 + 여유 공간 제외
 
 	if m.focusArea == "textarea" {
 		m.textarea.Focus()
 	} else {
 		m.textarea.Blur()
 	}
-
-	if len(m.messages) > 0 {
-		content := strings.Join(m.messages, "\n")
-		m.viewport.SetContent(lipgloss.NewStyle().Width(m.viewport.Width).Render(content))
-		m.viewport.GotoBottom()
-	}
 }
 
-func (m *ChatModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	var (
-		taCmd tea.Cmd
-		vpCmd tea.Cmd
-		lCmd  tea.Cmd
-		cmds  []tea.Cmd
+func (m *ChatModel) Init() tea.Cmd {
+
+	return tea.Batch(
+		m.connectSession(),
+		m.listenForMessages(),
 	)
+}
+
+// Update 함수 메시지 리스트 업데이트 반영
+func (m *ChatModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	var taCmd, mlCmd tea.Cmd
+	cmds := []tea.Cmd{}
 
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
@@ -175,7 +165,7 @@ func (m *ChatModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 			m.appendMessage(style.InfoStyle.Render("세션 재연결을 시도합니다."))
-			m.messageCh = make(chan string) // 새 채널로 갱신
+			m.messageCh = make(chan string)
 			return m, tea.Batch(
 				m.connectSession(),
 				m.listenForMessages(),
@@ -183,7 +173,7 @@ func (m *ChatModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case tea.KeyTab:
 			if m.focusArea == "textarea" {
-				m.focusArea = "users"
+				m.focusArea = "messages"
 				m.textarea.Blur()
 			} else {
 				m.focusArea = "textarea"
@@ -194,39 +184,40 @@ func (m *ChatModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.focusArea == "textarea" {
 				input := m.textarea.Value()
 				if strings.TrimSpace(input) != "" {
-					m.messages = append(m.messages, style.SenderStyle.Render("You: ")+input)
-					content := strings.Join(m.messages, "\n")
-					m.viewport.SetContent(lipgloss.NewStyle().Width(m.viewport.Width).Render(content))
+					m.appendMessage("You\n" + input)
 					m.textarea.Reset()
-					m.viewport.GotoBottom()
 				}
 			}
 		}
 
 	case incomingMessage:
-		m.appendMessage(style.SenderStyle.Render("Server: ") + string(msg))
-
+		m.appendMessage(string(msg))
 		return m, m.listenForMessages()
 	case serverErrorMsg:
-		m.appendMessage(style.ErrorStyle.Render("[LOG] ") + string(msg))
+		m.appendMessage("LOG\n" + string(msg))
 		return m, nil
+	}
+
+	if m.focusArea == "messages" {
+		m.messagesList, mlCmd = m.messagesList.Update(msg)
 	}
 
 	if m.focusArea == "textarea" {
 		m.textarea, taCmd = m.textarea.Update(msg)
-	} else {
-		m.users, lCmd = m.users.Update(msg)
 	}
-
-	m.viewport, vpCmd = m.viewport.Update(msg)
-	cmds = append(cmds, taCmd, lCmd, vpCmd)
+	cmds = append(cmds, taCmd, mlCmd)
 
 	return m, tea.Batch(cmds...)
 }
 
+type incomingMessage string
+type serverErrorMsg string
+
+// View 함수 수정: viewport 대신 messagesList.View() 사용
 func (m *ChatModel) View() string {
-	userView := style.UserListStyle.Render(m.users.View())
-	rightView := style.ChatViewStyle.Render(m.viewport.View() + "\n\n" + m.textarea.View())
+	rightView := style.ChatViewStyle.Render(
+		m.messagesList.View() + "\n" + m.textarea.View(),
+	)
 
 	status := "🔴 연결 끊김"
 	if m.sessionActive {
@@ -237,5 +228,5 @@ func (m *ChatModel) View() string {
 		Italic(true).
 		Render(fmt.Sprintf("\n\n(%s) 상태: %s", m.user.Username, status))
 
-	return lipgloss.JoinHorizontal(lipgloss.Top, userView, rightView) + statusView
+	return rightView + statusView
 }
