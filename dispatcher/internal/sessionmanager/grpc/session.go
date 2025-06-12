@@ -10,13 +10,13 @@ import (
 
 type sessionServiceServer struct {
 	pb.UnimplementedSessionServiceServer
-	sessions   session.Manager         // SessionManager Interface
+	sessions   session.SessionManager  // SessionManager Interface
 	userPool   session.UserSessionPool // userID -> sessionID 리스트 관리
 	logger     lib.Logger
 	shutdownCh chan struct{}
 }
 
-func NewSessionServiceServer(logger lib.Logger, manager session.Manager, userPool session.UserSessionPool) pb.SessionServiceServer {
+func NewSessionServiceServer(logger lib.Logger, manager session.SessionManager, userPool session.UserSessionPool) pb.SessionServiceServer {
 	return &sessionServiceServer{
 		sessions:   manager,
 		logger:     logger,

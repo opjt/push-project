@@ -6,12 +6,12 @@ import (
 )
 
 type SessionFacade struct {
-	sessions        Manager         // sessionID -> stream
+	sessions        SessionManager  // sessionID -> stream
 	userSessionPool UserSessionPool // userID -> []sessionID
 	logger          lib.Logger
 }
 
-func NewSessionFacade(sessions Manager, userPool UserSessionPool, logger lib.Logger) *SessionFacade {
+func NewSessionFacade(sessions SessionManager, userPool UserSessionPool, logger lib.Logger) *SessionFacade {
 	return &SessionFacade{
 		sessions:        sessions,
 		userSessionPool: userPool,
