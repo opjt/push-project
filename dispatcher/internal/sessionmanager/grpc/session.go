@@ -41,7 +41,8 @@ func (s *sessionServiceServer) Connect(req *pb.ConnectRequest, stream pb.Session
 
 	// Connect 직후 첫 메시지 전송
 	err := stream.Send(&pb.ServerMessage{
-		Message: fmt.Sprintf("Welcome %s! [%s]", sessionId, time.Now().Format(time.RFC3339)),
+		Title: fmt.Sprintf("Welcome %s! [%s]", sessionId, time.Now().Format(time.RFC3339)),
+		Body:  "session connected",
 	})
 	if err != nil {
 		s.logger.Errorf("Initial stream send error for %s: %v", userId, err)
@@ -52,7 +53,7 @@ func (s *sessionServiceServer) Connect(req *pb.ConnectRequest, stream pb.Session
 		select {
 		case <-s.shutdownCh:
 			// 종료 메시지 전송
-			_ = stream.Send(&pb.ServerMessage{Message: "__shutdown__"})
+			_ = stream.Send(&pb.ServerMessage{Title: "__shutdown__"})
 			return nil
 
 		case <-stream.Context().Done():

@@ -3,7 +3,6 @@ package sqs
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"push/common/lib"
 	"push/dispatcher/internal/sender/dto"
 	"push/dispatcher/internal/sender/grpc"
@@ -51,9 +50,7 @@ func (h *handler) HandleMessage(ctx context.Context, msg types.Message) error {
 
 func (h *handler) sendPushMessage(pushMsg *dto.PushMessage) error {
 
-	msg := fmt.Sprintf("%s\n%s", pushMsg.Title, pushMsg.Body)
-
-	return h.sessionFacade.SendMessageToUser(uint64(pushMsg.UserID), msg)
+	return h.sessionFacade.SendMessageToUser(uint64(pushMsg.UserID), pushMsg.Title, pushMsg.Body)
 }
 
 func parseSqsMessage(msg types.Message) (*dto.PushMessage, error) {

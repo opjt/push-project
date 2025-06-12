@@ -38,7 +38,7 @@ type ChatModel struct {
 	logger       lib.Logger
 
 	sessionClient grpc.SessionClient
-	messageCh     chan string
+	messageCh     chan grpc.Message
 	user          *state.User
 	sessionActive bool
 }
@@ -67,10 +67,10 @@ func NewChatModel(logger lib.Logger, user *state.User, client grpc.SessionClient
 	return &ChatModel{
 		messagesList:  messagesList,
 		textarea:      ta,
-		focusArea:     "textarea",
+		focusArea:     "messages",
 		logger:        logger,
 		sessionClient: client,
-		messageCh:     make(chan string),
+		messageCh:     make(chan grpc.Message),
 		user:          user,
 		sessionActive: false,
 	}
@@ -103,16 +103,9 @@ func (m *ChatModel) listenForMessages() tea.Cmd {
 }
 
 // 메시지 추가 함수 수정
-func (m *ChatModel) appendMessage(raw string) {
-	// "\n" 기준으로 분리
-	parts := strings.SplitN(raw, "\n", 2)
-	title, desc := "Unknown", raw
-	if len(parts) == 2 {
-		title = parts[0]
-		desc = parts[1]
-	}
+func (m *ChatModel) appendMessage(title, body string) {
 
-	newItem := messageItem{title: title, desc: desc}
+	newItem := messageItem{title: title, desc: body}
 	items := append(m.messagesList.Items(), newItem)
 	m.messagesList.SetItems(items)
 	m.messagesList.Select(len(items) - 1)
@@ -160,12 +153,12 @@ func (m *ChatModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		case tea.KeyCtrlR:
 			if m.sessionActive {
-				m.appendMessage(style.InfoStyle.Render("이미 서버에 연결되어 있습니다."))
+				m.appendMessage("INFO", style.InfoStyle.Render("이미 서버에 연결되어 있습니다."))
 				return m, nil
 			}
 
-			m.appendMessage(style.InfoStyle.Render("세션 재연결을 시도합니다."))
-			m.messageCh = make(chan string)
+			m.appendMessage("INFO", style.InfoStyle.Render("세션 재연결을 시도합니다."))
+			m.messageCh = make(chan grpc.Message)
 			return m, tea.Batch(
 				m.connectSession(),
 				m.listenForMessages(),
@@ -184,17 +177,17 @@ func (m *ChatModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.focusArea == "textarea" {
 				input := m.textarea.Value()
 				if strings.TrimSpace(input) != "" {
-					m.appendMessage("You\n" + input)
+					m.appendMessage("You", input)
 					m.textarea.Reset()
 				}
 			}
 		}
 
 	case incomingMessage:
-		m.appendMessage(string(msg))
+		m.appendMessage(msg.Title, msg.Body)
 		return m, m.listenForMessages()
 	case serverErrorMsg:
-		m.appendMessage("LOG\n" + string(msg))
+		m.appendMessage("LOG", string(msg))
 		return m, nil
 	}
 
@@ -210,7 +203,7 @@ func (m *ChatModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, tea.Batch(cmds...)
 }
 
-type incomingMessage string
+type incomingMessage grpc.Message
 type serverErrorMsg string
 
 // View 함수 수정: viewport 대신 messagesList.View() 사용

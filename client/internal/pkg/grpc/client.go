@@ -16,13 +16,18 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+type Message struct {
+	Title string
+	Body  string
+}
+
 type sessionClient struct {
 	client pb.SessionServiceClient
 	logger lib.Logger
 }
 
 type SessionClient interface {
-	Connect(context.Context, state.User, chan<- string) error
+	Connect(context.Context, state.User, chan<- Message) error
 }
 
 func NewSessionServiceClient(logger lib.Logger, lc fx.Lifecycle, env lib.Env) (SessionClient, error) {
@@ -48,7 +53,7 @@ func NewSessionServiceClient(logger lib.Logger, lc fx.Lifecycle, env lib.Env) (S
 	return c, nil
 }
 
-func (c *sessionClient) Connect(ctx context.Context, user state.User, messageCh chan<- string) error {
+func (c *sessionClient) Connect(ctx context.Context, user state.User, messageCh chan<- Message) error {
 	stream, err := c.client.Connect(ctx, &pb.ConnectRequest{UserId: user.UserId, SessionId: user.SessionId})
 	if err != nil {
 		return fmt.Errorf("failed to connect to session stream: %w", err)
@@ -66,12 +71,15 @@ func (c *sessionClient) Connect(ctx context.Context, user state.User, messageCh 
 				c.logger.Errorf("error receiving from stream: %v", err)
 				return
 			}
-			if msg.GetMessage() == "__shutdown__" {
+			if msg.GetTitle() == "__shutdown__" {
 				return
 			}
 
 			// 받은 메시지를 채널로 전달
-			messageCh <- msg.GetMessage()
+			messageCh <- Message{
+				Title: msg.GetTitle(),
+				Body:  msg.GetBody(),
+			}
 		}
 	}()
 

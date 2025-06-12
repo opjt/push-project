@@ -32,7 +32,7 @@ func (r *SessionFacade) Remove(userID uint64, sessionID string) {
 }
 
 // 유저에게 메시지 전송
-func (r *SessionFacade) SendMessageToUser(userID uint64, message string) error {
+func (r *SessionFacade) SendMessageToUser(userID uint64, title, body string) error {
 	sessionIDs := r.userSessionPool.GetSessionIDs(userID)
 	if len(sessionIDs) == 0 {
 		r.logger.Infof("No active sessions for user %s", userID)
@@ -45,7 +45,7 @@ func (r *SessionFacade) SendMessageToUser(userID uint64, message string) error {
 			r.logger.Warnf("Session %s for user %s not found", sid, userID)
 			continue
 		}
-		err := stream.Send(&pb.ServerMessage{Message: message})
+		err := stream.Send(&pb.ServerMessage{Title: title, Body: body})
 		if err != nil {
 			r.logger.Errorf("Failed to send message to session %s (user %s): %v", sid, userID, err)
 		}

@@ -13,5 +13,6 @@ message ConnectRequest {
 }
 
 message ServerMessage {
-  string message = 1;
+  string title = 1;
+  string body = 2;
 }

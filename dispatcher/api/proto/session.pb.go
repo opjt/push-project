@@ -75,7 +75,8 @@ func (x *ConnectRequest) GetSessionId() string {
 
 type ServerMessage struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Message       string                 `protobuf:"bytes,1,opt,name=message,proto3" json:"message,omitempty"`
+	Title         string                 `protobuf:"bytes,1,opt,name=title,proto3" json:"title,omitempty"`
+	Body          string                 `protobuf:"bytes,2,opt,name=body,proto3" json:"body,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -110,9 +111,16 @@ func (*ServerMessage) Descriptor() ([]byte, []int) {
 	return file_dispatcher_api_proto_session_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *ServerMessage) GetMessage() string {
+func (x *ServerMessage) GetTitle() string {
 	if x != nil {
-		return x.Message
+		return x.Title
+	}
+	return ""
+}
+
+func (x *ServerMessage) GetBody() string {
+	if x != nil {
+		return x.Body
 	}
 	return ""
 }
@@ -125,9 +133,10 @@ const file_dispatcher_api_proto_session_proto_rawDesc = "" +
 	"\x0eConnectRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\x04R\x06userId\x12\x1d\n" +
 	"\n" +
-	"session_id\x18\x02 \x01(\tR\tsessionId\")\n" +
-	"\rServerMessage\x12\x18\n" +
-	"\amessage\x18\x01 \x01(\tR\amessage2N\n" +
+	"session_id\x18\x02 \x01(\tR\tsessionId\"9\n" +
+	"\rServerMessage\x12\x14\n" +
+	"\x05title\x18\x01 \x01(\tR\x05title\x12\x12\n" +
+	"\x04body\x18\x02 \x01(\tR\x04body2N\n" +
 	"\x0eSessionService\x12<\n" +
 	"\aConnect\x12\x17.session.ConnectRequest\x1a\x16.session.ServerMessage0\x01B\x1cZ\x1adispatcher/api/proto;protob\x06proto3"
 
