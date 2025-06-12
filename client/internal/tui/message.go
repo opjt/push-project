@@ -169,6 +169,11 @@ func (m *ChatModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case tea.KeyCtrlC, tea.KeyEsc:
 			return m, tea.Quit
 		case tea.KeyCtrlR:
+			if m.sessionActive {
+				m.appendMessage(style.InfoStyle.Render("이미 서버에 연결되어 있습니다."))
+				return m, nil
+			}
+
 			m.appendMessage(style.InfoStyle.Render("세션 재연결을 시도합니다."))
 			m.messageCh = make(chan string) // 새 채널로 갱신
 			return m, tea.Batch(
