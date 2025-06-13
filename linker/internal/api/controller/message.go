@@ -6,6 +6,7 @@ import (
 	"push/common/lib"
 	"push/linker/dto"
 	servicedto "push/linker/internal/api/dto"
+	"push/linker/internal/model"
 	"push/linker/internal/service"
 	"strconv"
 
@@ -24,7 +25,7 @@ func NewMessageController(logger lib.Logger, service service.MessageService) Mes
 	}
 }
 
-func (p MessageController) UpdateStatus(c *gin.Context) {
+func (p MessageController) UpdateStatusToReceive(c *gin.Context) {
 	msgIdParam := c.Param("msgid")
 	msgId, err := strconv.Atoi(msgIdParam)
 	if err != nil || msgId < 0 {
@@ -43,8 +44,9 @@ func (p MessageController) UpdateStatus(c *gin.Context) {
 	ctx := c.Request.Context()
 	updateDto := servicedto.UpdateMessageDTO{
 		Id:     msgIdUint64,
-		Status: req.Status,
+		Status: model.STATUS_SENT,
 	}
+
 	if err := p.service.UpdateMessageStatus(ctx, updateDto); err != nil {
 		p.logger.Error(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "error message"}) // TODO : 에러 처리 개선 필요.

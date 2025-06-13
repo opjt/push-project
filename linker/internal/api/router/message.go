@@ -28,7 +28,7 @@ func NewMessageRouter(
 func (r MessageRouter) Setup() {
 	msgRoutes := r.engine.ApiGroup.Group("/messages")
 	{
-		msgRoutes.PATCH("/:msgid/status", r.messageController.UpdateStatus)
+		msgRoutes.POST("/:msgid/receive", r.messageController.UpdateStatusToReceive)
 
 	}
 

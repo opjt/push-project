@@ -47,7 +47,7 @@ func (r *SessionFacade) SendMessageToUser(pushDto *dto.PushMessage) error {
 			r.logger.Warnf("Session %s for user %s not found", sid, userId)
 			continue
 		}
-		err := stream.Send(&pb.ServerMessage{Title: pushDto.Title, Body: pushDto.Body})
+		err := stream.Send(&pb.ServerMessage{MsgId: uint64(pushDto.MsgID), Title: pushDto.Title, Body: pushDto.Body})
 		if err != nil {
 			r.logger.Errorf("Failed to send message to session %s (user %s): %v", sid, userId, err)
 		}

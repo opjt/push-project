@@ -7,6 +7,7 @@ import (
 	"push/linker/internal/model"
 	"push/linker/internal/pkg/database"
 	"push/linker/internal/repository"
+	"time"
 )
 
 type MessageService interface {
@@ -54,6 +55,9 @@ func (s *messageService) UpdateMessageStatus(ctx context.Context, dto dto.Update
 		Status:   dto.Status,
 		SnsMsgId: dto.SnsMsgId,
 	}
-
+	if dto.Status == model.STATUS_SENT {
+		now := time.Now()
+		msg.SentAt = &now
+	}
 	return s.repository.UpdateMessage(ctx, msg)
 }

@@ -17,6 +17,7 @@ import (
 )
 
 type Message struct {
+	MsgId uint64
 	Title string
 	Body  string
 }
@@ -77,6 +78,7 @@ func (c *sessionClient) Connect(ctx context.Context, user state.User, messageCh 
 
 			// 받은 메시지를 채널로 전달
 			messageCh <- Message{
+				MsgId: msg.GetMsgId(),
 				Title: msg.GetTitle(),
 				Body:  msg.GetBody(),
 			}

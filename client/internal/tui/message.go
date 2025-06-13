@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"push/client/internal/pkg/grpc"
+	"push/client/internal/pkg/httpclient/message"
 	"push/client/internal/tui/state"
 	"push/client/internal/tui/style"
 	"push/common/lib"
@@ -97,6 +98,9 @@ func (m *ChatModel) listenForMessages() tea.Cmd {
 			m.sessionActive = false
 			return serverErrorMsg("채널이 종료되었습니다.")
 
+		}
+		if err := message.MessageReceive(msg.MsgId); err != nil {
+			return serverErrorMsg(fmt.Sprintf("Receive failed: %v", err))
 		}
 		return incomingMessage(msg)
 	}

@@ -37,12 +37,16 @@ func (r *messageRepository) CreateMessage(ctx context.Context, msg *model.Messag
 }
 
 func (r *messageRepository) UpdateMessage(ctx context.Context, msg *model.Message) error {
+
 	updates := map[string]interface{}{
 		"status": msg.Status,
 	}
 
 	if msg.SnsMsgId != "" {
 		updates["sns_msg_id"] = msg.SnsMsgId
+	}
+	if msg.SentAt != nil {
+		updates["sent_at"] = msg.SentAt
 	}
 
 	return r.db.Model(&model.Message{}).
