@@ -1,22 +1,28 @@
 package session
 
 import (
+	"context"
 	"push/common/lib"
 	pb "push/dispatcher/api/proto"
 	"push/dispatcher/internal/sender/dto"
+	"push/dispatcher/internal/sender/grpc"
+	linkerpb "push/linker/api/proto"
+	"push/linker/types"
 )
 
 type SessionFacade struct {
 	sessions        SessionManager  // sessionID -> stream
 	userSessionPool UserSessionPool // userID -> []sessionID
 	logger          lib.Logger
+	rpc             grpc.MessageClient
 }
 
-func NewSessionFacade(sessions SessionManager, userPool UserSessionPool, logger lib.Logger) *SessionFacade {
+func NewSessionFacade(sessions SessionManager, userPool UserSessionPool, logger lib.Logger, rpc grpc.MessageClient) *SessionFacade {
 	return &SessionFacade{
 		sessions:        sessions,
 		userSessionPool: userPool,
 		logger:          logger,
+		rpc:             rpc,
 	}
 }
 
@@ -37,7 +43,7 @@ func (r *SessionFacade) SendMessageToUser(pushDto *dto.PushMessage) error {
 	userId := uint64(pushDto.UserID)
 	sessionIDs := r.userSessionPool.GetSessionIDs(userId)
 	if len(sessionIDs) == 0 {
-		r.logger.Infof("No active sessions for user %s", userId)
+		r.updateMessageStatus(context.Background(), uint64(pushDto.MsgID))
 		return nil
 	}
 
@@ -53,4 +59,12 @@ func (r *SessionFacade) SendMessageToUser(pushDto *dto.PushMessage) error {
 		}
 	}
 	return nil
+}
+
+func (r *SessionFacade) updateMessageStatus(ctx context.Context, msgId uint64) {
+	_, err := r.rpc.UpdateStatus(ctx, &linkerpb.ReqUpdateStatus{Id: msgId, Status: types.StatusDeferred})
+	if err != nil {
+		r.logger.Warnf("Failed to update message status: %v", err)
+	}
+
 }

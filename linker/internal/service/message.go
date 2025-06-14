@@ -7,6 +7,7 @@ import (
 	"push/linker/internal/model"
 	"push/linker/internal/pkg/database"
 	"push/linker/internal/repository"
+	"push/linker/types"
 	"time"
 )
 
@@ -39,7 +40,7 @@ func (s *messageService) createMessage(ctx context.Context, dto dto.CreateMessag
 		UserID:  dto.UserId,
 		Title:   dto.Title,
 		Content: dto.Content,
-		Status:  model.STATUS_PENDING,
+		Status:  types.StatusPending,
 	}
 	id, err := s.repository.CreateMessage(ctx, msg)
 	if err != nil {
@@ -55,7 +56,7 @@ func (s *messageService) UpdateMessageStatus(ctx context.Context, dto dto.Update
 		Status:   dto.Status,
 		SnsMsgId: dto.SnsMsgId,
 	}
-	if dto.Status == model.STATUS_SENT {
+	if dto.Status == types.StatusSent {
 		now := time.Now()
 		msg.SentAt = &now
 	}

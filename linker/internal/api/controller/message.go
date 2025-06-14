@@ -6,8 +6,8 @@ import (
 	"push/common/lib"
 	"push/linker/dto"
 	servicedto "push/linker/internal/api/dto"
-	"push/linker/internal/model"
 	"push/linker/internal/service"
+	"push/linker/types"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -44,7 +44,7 @@ func (p MessageController) UpdateStatusToReceive(c *gin.Context) {
 	ctx := c.Request.Context()
 	updateDto := servicedto.UpdateMessageDTO{
 		Id:     msgIdUint64,
-		Status: model.STATUS_SENT,
+		Status: types.StatusSent,
 	}
 
 	if err := p.service.UpdateMessageStatus(ctx, updateDto); err != nil {
