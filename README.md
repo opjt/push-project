@@ -34,8 +34,32 @@ graph LR
     E1 -->|gRpc Stream| F1["client (goCLi)"]
 ```
 
-## 서비스
+### 서비스
 
 - [Linker](linker/README.md): 메시지를 SNS에 발행하는 Publisher
 - [sender](dispatcher/README.md): SQS로부터 메시지를 읽고 클라이언트에 전달하는 Sender
 
+## 프로젝트 실행하기 (개발환경)
+
+1. **환경변수 설정**
+
+     `.env.sample` 파일을 복사하여 `.env` 파일을 생성한 후 값을 기입해 주세요.
+
+2. **docker 컨테이너 실행 및 인프라 설정**
+
+     `docker compose up -d`로 Docker 컨테이너를 실행합니다  
+     컨테이너 실행 후, 로컬 인프라(AWS LocalStack, DB)를 아래 명령어로 설정해 주세요:
+
+     ```bash
+     make aws # localstack aws 서비스 설정.
+     make db-setup # 디비 스키마 적용
+     ```
+
+3. **서비스 개별 실행**
+
+     각 서비스를 아래 명령어로 실행할 수 있습니다:
+
+     ```bash
+     go run linker/main.go # linker 서비스 실행
+     go run dispatcher/main.go # sender, session-manager 실행
+     ```
