@@ -14,6 +14,7 @@ import (
 type MessageService interface {
 	createMessage(context.Context, dto.CreateMessageDTO) (uint64, error)
 	UpdateMessageStatus(context.Context, dto.UpdateMessageDTO) error
+	ReceiveMessage(context.Context, uint64) error
 }
 
 // 메세지를 생성하고 관리하는 서비스.
@@ -61,4 +62,9 @@ func (s *messageService) UpdateMessageStatus(ctx context.Context, dto dto.Update
 		msg.SentAt = &now
 	}
 	return s.repository.UpdateMessage(ctx, msg)
+}
+
+func (s *messageService) ReceiveMessage(ctx context.Context, msgId uint64) error {
+
+	return s.repository.ReceiveMessage(ctx, msgId)
 }

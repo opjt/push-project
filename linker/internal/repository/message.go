@@ -4,6 +4,8 @@ import (
 	"context"
 	"push/linker/internal/model"
 	"push/linker/internal/pkg/database"
+	"push/linker/types"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -12,6 +14,7 @@ type MessageRepository interface {
 	CreateMessage(ctx context.Context, msg *model.Message) (uint64, error)
 	UpdateMessage(ctx context.Context, msg *model.Message) error
 	GetById(ctx context.Context, id uint) (*model.Message, error)
+	ReceiveMessage(ctx context.Context, msgId uint64) error
 }
 type messageRepository struct {
 	db *gorm.DB
@@ -53,4 +56,15 @@ func (r *messageRepository) UpdateMessage(ctx context.Context, msg *model.Messag
 		Where("id = ?", msg.ID).
 		Updates(updates).Error
 
+}
+
+func (r *messageRepository) ReceiveMessage(ctx context.Context, msgId uint64) error {
+	updates := map[string]interface{}{
+
+		"status":  types.StatusSent,
+		"sent_at": time.Now(),
+	}
+	return r.db.Model(&model.Message{}).
+		Where("id = ? AND sent_at IS NULL", msgId).
+		Updates(updates).Error
 }

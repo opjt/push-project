@@ -91,6 +91,47 @@ func (m *ChatModel) connectSession() tea.Cmd {
 		return nil
 	}
 }
+
+/**
+func (m *ChatModel) connectThousandSessions() tea.Cmd {
+	return func() tea.Msg {
+		sessionCount := 2000
+		errCh := make(chan error, sessionCount)
+
+		for i := 0; i < sessionCount; i++ {
+			go func(i int) {
+				userCopy := *m.user
+				userCopy.UserId = 1
+				userCopy.SessionId = fmt.Sprintf("%s_%d", m.user.SessionId, i)
+
+				err := m.sessionClient.Connect(context.Background(), userCopy, m.messageCh)
+				if err != nil {
+					errCh <- fmt.Errorf("session %d connect fail: %w", i, err)
+					return
+				}
+
+				errCh <- nil
+			}(i)
+		}
+
+		var failed int
+		for i := 0; i < sessionCount; i++ {
+			if err := <-errCh; err != nil {
+				m.logger.Error(err.Error())
+				failed++
+			}
+		}
+
+		if failed > 0 {
+			return serverErrorMsg(fmt.Sprintf("%d sessions failed to connect", failed))
+		}
+
+		m.sessionActive = true
+		return nil
+	}
+}
+**/
+
 func (m *ChatModel) listenForMessages() tea.Cmd {
 	return func() tea.Msg {
 		msg, ok := <-m.messageCh
@@ -138,6 +179,7 @@ func (m *ChatModel) Init() tea.Cmd {
 
 	return tea.Batch(
 		m.connectSession(),
+		// m.connectThousandSessions(),
 		m.listenForMessages(),
 	)
 }

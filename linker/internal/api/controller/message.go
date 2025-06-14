@@ -5,9 +5,7 @@ import (
 	commondto "push/common/dto"
 	"push/common/lib"
 	"push/linker/dto"
-	servicedto "push/linker/internal/api/dto"
 	"push/linker/internal/service"
-	"push/linker/types"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -42,12 +40,8 @@ func (p MessageController) UpdateStatusToReceive(c *gin.Context) {
 	}
 
 	ctx := c.Request.Context()
-	updateDto := servicedto.UpdateMessageDTO{
-		Id:     msgIdUint64,
-		Status: types.StatusSent,
-	}
 
-	if err := p.service.UpdateMessageStatus(ctx, updateDto); err != nil {
+	if err := p.service.ReceiveMessage(ctx, msgIdUint64); err != nil {
 		p.logger.Error(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "error message"}) // TODO : 에러 처리 개선 필요.
 		return

@@ -11,3 +11,7 @@ type UpdateMessageDTO struct {
 	Status   string
 	SnsMsgId string
 }
+
+type ReceiveMessageDTO struct {
+	Id uint64
+}
