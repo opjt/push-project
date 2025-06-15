@@ -22,8 +22,8 @@ type SessionClient interface {
 
 // grpc client 생성자
 func NewSessioneServiceClient(logger lib.Logger, lc fx.Lifecycle, env lib.Env) (SessionClient, error) {
-	// Linker gRPC 연결.
-	clientConn, err := grpc.NewClient("localhost:"+env.Dispatcher.SessionPort, grpc.WithTransportCredentials(insecure.NewCredentials()))
+
+	clientConn, err := grpc.NewClient("localhost:"+env.Session.Port, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create gRPC client: %w", err)
 
@@ -37,7 +37,6 @@ func NewSessioneServiceClient(logger lib.Logger, lc fx.Lifecycle, env lib.Env) (
 
 	lc.Append(fx.Hook{
 		OnStart: func(context.Context) error {
-
 			return nil
 		},
 		OnStop: func(context.Context) error {
