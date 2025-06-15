@@ -3,7 +3,6 @@ package lib
 import (
 	"context"
 	"log"
-	"sync"
 
 	"github.com/joho/godotenv"
 	"github.com/sethvargo/go-envconfig"
@@ -47,21 +46,6 @@ type DB struct {
 	Port     string `env:"PORT"`
 }
 
-var (
-	once sync.Once
-	env  Env
-)
-
-func LoadEnv() Env {
-	_ = godotenv.Load()
-	if err := envconfig.Process(context.Background(), &env); err != nil {
-		log.Fatal(err)
-	}
-	validateEnv(&env)
-
-	return env
-}
-
 func validateEnv(e *Env) {
 	if e.DB.Host == "" || e.DB.Database == "" || e.DB.Password == "" || e.DB.User == "" {
 		log.Fatal("Invalid DB env")
@@ -72,10 +56,11 @@ func validateEnv(e *Env) {
 }
 
 func NewEnv() Env {
-
-	once.Do(func() {
-		env = LoadEnv()
-
-	})
+	_ = godotenv.Load()
+	env := Env{}
+	if err := envconfig.Process(context.Background(), &env); err != nil {
+		log.Fatal(err)
+	}
+	validateEnv(&env)
 	return env
 }

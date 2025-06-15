@@ -193,9 +193,6 @@ func newSugaredLogger(logger *zap.Logger) *Logger {
 	}
 }
 
-// GORM Framework Logger Interface Implementations
-// ---- START ----
-
 // LogMode set log mode
 func (l *GormLogger) LogMode(level gormlogger.LogLevel) gormlogger.Interface {
 	newlogger := *l

@@ -45,7 +45,7 @@ func (h *handler) HandleMessage(ctx context.Context, msg types.Message) error {
 	h.log.Infof("Received push message: %+v", pushMsg)
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
-	h.mclient.UpdateStatus(ctx, &pb.ReqUpdateStatus{Id: uint64(pushMsg.MsgID), Status: msgTypes.StatusSending, SnsMsgId: *msg.MessageId})
+	h.mclient.UpdateStatus(ctx, &pb.ReqUpdateStatus{Id: uint64(pushMsg.MsgID), Status: msgTypes.StatusSending, SnsMsgId: *msg.MessageId}) // TODO : 에러 처리 필요.
 
 	return h.sendPushMessage(pushMsg)
 }
@@ -60,7 +60,7 @@ func (h *handler) sendPushMessage(pushMsg *dto.PushMessage) error {
 			Body:  pushMsg.Body,
 		},
 	}
-	_, err := h.sessionClient.PushMessage(context.Background(), &pushReq)
+	_, err := h.sessionClient.PushMessage(context.Background(), &pushReq) // TODO : sessionmanager 장애시 예외처리.
 	if err != nil {
 		return err
 	}
