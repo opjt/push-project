@@ -1,4 +1,4 @@
-package grpc
+package client
 
 import (
 	"context"
@@ -11,7 +11,6 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-// TODO : 향후 공통서비스에서 해당 클라이언트를 제공하도록 개선 필요.
 type messageClient struct {
 	client pb.MessageServiceClient
 	logger lib.Logger

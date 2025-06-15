@@ -1,0 +1,59 @@
+package client
+
+import (
+	"context"
+	"fmt"
+	"push/common/lib"
+	pb "push/sessionmanager/api/proto"
+
+	"go.uber.org/fx"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
+)
+
+type sessionClient struct {
+	client pb.SessionServiceClient
+	logger lib.Logger
+}
+
+type SessionClient interface {
+	PushMessage(ctx context.Context, in *pb.PushRequest) (*pb.PushResponse, error)
+}
+
+// grpc client 생성자
+func NewSessioneServiceClient(logger lib.Logger, lc fx.Lifecycle, env lib.Env) (SessionClient, error) {
+	// Linker gRPC 연결.
+	clientConn, err := grpc.NewClient("localhost:"+env.Dispatcher.SessionPort, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		return nil, fmt.Errorf("failed to create gRPC client: %w", err)
+
+	}
+	sessionServiceClient := pb.NewSessionServiceClient(clientConn)
+
+	c := sessionClient{
+		client: sessionServiceClient,
+		logger: logger,
+	}
+
+	lc.Append(fx.Hook{
+		OnStart: func(context.Context) error {
+
+			return nil
+		},
+		OnStop: func(context.Context) error {
+			clientConn.Close()
+			return nil
+		},
+	})
+
+	return &c, nil
+}
+
+func (m *sessionClient) PushMessage(ctx context.Context, req *pb.PushRequest) (*pb.PushResponse, error) {
+
+	return m.client.PushMessage(ctx, req)
+}
+
+var Module = fx.Options(
+	fx.Provide(NewSessioneServiceClient),
+)

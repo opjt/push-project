@@ -1,10 +1,12 @@
 package grpc
 
 import (
+	"context"
 	"fmt"
 	"push/common/lib"
-	pb "push/dispatcher/api/proto"
-	"push/dispatcher/internal/sessionmanager/session"
+	pb "push/sessionmanager/api/proto"
+	"push/sessionmanager/internal/dto"
+	"push/sessionmanager/internal/session"
 	"time"
 )
 
@@ -23,6 +25,20 @@ func NewSessionServiceServer(logger lib.Logger, manager *session.SessionFacade) 
 	}
 }
 
+// vontext.Context, *PushRequest) (*PushResponse, error)
+func (s *sessionServiceServer) PushMessage(ctx context.Context, req *pb.PushRequest) (*pb.PushResponse, error) {
+	dto := &dto.Push{
+		UserId: req.GetUserId(),
+		Title:  req.Message.GetTitle(),
+		Body:   req.Message.GetBody(),
+		MsgId:  req.Message.MsgId,
+	}
+	if err := s.manager.SendMessageToUser(dto); err != nil {
+		return &pb.PushResponse{Success: false}, err
+	}
+	return &pb.PushResponse{Success: true}, nil
+
+}
 func (s *sessionServiceServer) Connect(req *pb.ConnectRequest, stream pb.SessionService_ConnectServer) error {
 	userId := req.GetUserId()
 	sessionId := req.GetSessionId()

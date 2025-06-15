@@ -4,13 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"push/common/lib"
-	"push/dispatcher/internal/sender/dto"
-	"push/dispatcher/internal/sender/grpc"
-	"push/dispatcher/internal/sessionmanager/session"
 	msgTypes "push/linker/types"
+	"push/sender/internal/dto"
 	"time"
 
+	"push/linker/api/client"
 	pb "push/linker/api/proto"
+	sclient "push/sessionmanager/api/client"
+	spb "push/sessionmanager/api/proto"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/sqs/types"
@@ -22,15 +23,15 @@ type Handler interface {
 
 type handler struct {
 	log           lib.Logger
-	mclient       grpc.MessageClient
-	sessionFacade *session.SessionFacade
+	mclient       client.MessageClient
+	sessionClient sclient.SessionClient
 }
 
-func NewHandler(log lib.Logger, mclient grpc.MessageClient, sessionFacade *session.SessionFacade) Handler {
+func NewHandler(log lib.Logger, mclient client.MessageClient, sessionClient sclient.SessionClient) Handler {
 	return &handler{
 		log:           log,
 		mclient:       mclient,
-		sessionFacade: sessionFacade,
+		sessionClient: sessionClient,
 	}
 }
 
@@ -50,8 +51,20 @@ func (h *handler) HandleMessage(ctx context.Context, msg types.Message) error {
 }
 
 func (h *handler) sendPushMessage(pushMsg *dto.PushMessage) error {
-
-	return h.sessionFacade.SendMessageToUser(pushMsg)
+	pushReq := spb.PushRequest{
+		UserId:    uint64(pushMsg.UserID),
+		SessionId: "",
+		Message: &spb.ServerMessage{
+			MsgId: uint64(pushMsg.MsgID),
+			Title: pushMsg.Title,
+			Body:  pushMsg.Body,
+		},
+	}
+	_, err := h.sessionClient.PushMessage(context.Background(), &pushReq)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func parseSqsMessage(msg types.Message) (*dto.PushMessage, error) {

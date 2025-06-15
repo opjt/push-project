@@ -7,7 +7,7 @@ import (
 	"io"
 	"push/client/internal/tui/state"
 	"push/common/lib"
-	pb "push/dispatcher/api/proto"
+	pb "push/sessionmanager/api/proto"
 
 	"go.uber.org/fx"
 	"google.golang.org/grpc"

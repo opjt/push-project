@@ -5,7 +5,7 @@ import (
 	"net"
 
 	"push/common/lib"
-	pb "push/dispatcher/api/proto"
+	pb "push/sessionmanager/api/proto"
 
 	"go.uber.org/fx"
 	"google.golang.org/grpc"

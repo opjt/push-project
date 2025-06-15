@@ -3,7 +3,7 @@ package session
 import (
 	"errors"
 	"fmt"
-	pb "push/dispatcher/api/proto"
+	pb "push/sessionmanager/api/proto"
 	"sync"
 )
 

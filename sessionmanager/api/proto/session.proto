@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package session;
+option go_package = "sessionmanager/api/proto;proto";
+
+service SessionService {
+  rpc Connect(ConnectRequest) returns (stream ServerMessage); // 세션 연결
+  rpc PushMessage(PushRequest) returns (PushResponse); // 세션에 메시지 전송
+}
+
+
+
+message ConnectRequest {
+  uint64 user_id = 1;
+  string session_id = 2;
+}
+
+message ServerMessage {
+  uint64 msg_id = 1;
+  string title = 2;
+  string body = 3;
+}
+
+message PushRequest {
+  uint64 user_id = 1;
+  string session_id = 2; // 선택사항: 유저가 다중 세션일 경우
+  ServerMessage message = 3;
+}
+message PushResponse {
+  bool success = 1;
+  // string error = 2; // error message
+}

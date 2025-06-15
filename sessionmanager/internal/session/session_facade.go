@@ -3,21 +3,21 @@ package session
 import (
 	"context"
 	"push/common/lib"
-	pb "push/dispatcher/api/proto"
-	"push/dispatcher/internal/sender/dto"
-	"push/dispatcher/internal/sender/grpc"
+	"push/linker/api/client"
 	linkerpb "push/linker/api/proto"
 	"push/linker/types"
+	pb "push/sessionmanager/api/proto"
+	"push/sessionmanager/internal/dto"
 )
 
 type SessionFacade struct {
 	sessions        SessionManager  // sessionID -> stream
 	userSessionPool UserSessionPool // userID -> []sessionID
 	logger          lib.Logger
-	rpc             grpc.MessageClient
+	rpc             client.MessageClient
 }
 
-func NewSessionFacade(sessions SessionManager, userPool UserSessionPool, logger lib.Logger, rpc grpc.MessageClient) *SessionFacade {
+func NewSessionFacade(sessions SessionManager, userPool UserSessionPool, logger lib.Logger, rpc client.MessageClient) *SessionFacade {
 	return &SessionFacade{
 		sessions:        sessions,
 		userSessionPool: userPool,
@@ -39,11 +39,11 @@ func (r *SessionFacade) Remove(userID uint64, sessionID string) {
 }
 
 // 유저에게 메시지 전송
-func (r *SessionFacade) SendMessageToUser(pushDto *dto.PushMessage) error {
-	userId := uint64(pushDto.UserID)
+func (r *SessionFacade) SendMessageToUser(pushDto *dto.Push) error {
+	userId := pushDto.UserId
 	sessionIDs := r.userSessionPool.GetSessionIDs(userId)
 	if len(sessionIDs) == 0 {
-		r.updateMessageStatus(context.Background(), uint64(pushDto.MsgID))
+		r.updateMessageStatus(context.Background(), pushDto.MsgId)
 		return nil
 	}
 
@@ -53,7 +53,7 @@ func (r *SessionFacade) SendMessageToUser(pushDto *dto.PushMessage) error {
 			r.logger.Warnf("Session %s for user %s not found", sid, userId)
 			continue
 		}
-		err := stream.Send(&pb.ServerMessage{MsgId: uint64(pushDto.MsgID), Title: pushDto.Title, Body: pushDto.Body})
+		err := stream.Send(&pb.ServerMessage{MsgId: pushDto.MsgId, Title: pushDto.Title, Body: pushDto.Body})
 		if err != nil {
 			r.logger.Errorf("Failed to send message to session %s (user %s): %v", sid, userId, err)
 		}

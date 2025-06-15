@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.5.1
 // - protoc             v5.29.3
-// source: dispatcher/api/proto/session.proto
+// source: sessionmanager/api/proto/session.proto
 
 package proto
 
@@ -19,7 +19,8 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	SessionService_Connect_FullMethodName = "/session.SessionService/Connect"
+	SessionService_Connect_FullMethodName     = "/session.SessionService/Connect"
+	SessionService_PushMessage_FullMethodName = "/session.SessionService/PushMessage"
 )
 
 // SessionServiceClient is the client API for SessionService service.
@@ -27,6 +28,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type SessionServiceClient interface {
 	Connect(ctx context.Context, in *ConnectRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[ServerMessage], error)
+	PushMessage(ctx context.Context, in *PushRequest, opts ...grpc.CallOption) (*PushResponse, error)
 }
 
 type sessionServiceClient struct {
@@ -56,11 +58,22 @@ func (c *sessionServiceClient) Connect(ctx context.Context, in *ConnectRequest, 
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type SessionService_ConnectClient = grpc.ServerStreamingClient[ServerMessage]
 
+func (c *sessionServiceClient) PushMessage(ctx context.Context, in *PushRequest, opts ...grpc.CallOption) (*PushResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(PushResponse)
+	err := c.cc.Invoke(ctx, SessionService_PushMessage_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // SessionServiceServer is the server API for SessionService service.
 // All implementations must embed UnimplementedSessionServiceServer
 // for forward compatibility.
 type SessionServiceServer interface {
 	Connect(*ConnectRequest, grpc.ServerStreamingServer[ServerMessage]) error
+	PushMessage(context.Context, *PushRequest) (*PushResponse, error)
 	mustEmbedUnimplementedSessionServiceServer()
 }
 
@@ -73,6 +86,9 @@ type UnimplementedSessionServiceServer struct{}
 
 func (UnimplementedSessionServiceServer) Connect(*ConnectRequest, grpc.ServerStreamingServer[ServerMessage]) error {
 	return status.Errorf(codes.Unimplemented, "method Connect not implemented")
+}
+func (UnimplementedSessionServiceServer) PushMessage(context.Context, *PushRequest) (*PushResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PushMessage not implemented")
 }
 func (UnimplementedSessionServiceServer) mustEmbedUnimplementedSessionServiceServer() {}
 func (UnimplementedSessionServiceServer) testEmbeddedByValue()                        {}
@@ -106,13 +122,36 @@ func _SessionService_Connect_Handler(srv interface{}, stream grpc.ServerStream) 
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type SessionService_ConnectServer = grpc.ServerStreamingServer[ServerMessage]
 
+func _SessionService_PushMessage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PushRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SessionServiceServer).PushMessage(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: SessionService_PushMessage_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SessionServiceServer).PushMessage(ctx, req.(*PushRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // SessionService_ServiceDesc is the grpc.ServiceDesc for SessionService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var SessionService_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "session.SessionService",
 	HandlerType: (*SessionServiceServer)(nil),
-	Methods:     []grpc.MethodDesc{},
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "PushMessage",
+			Handler:    _SessionService_PushMessage_Handler,
+		},
+	},
 	Streams: []grpc.StreamDesc{
 		{
 			StreamName:    "Connect",
@@ -120,5 +159,5 @@ var SessionService_ServiceDesc = grpc.ServiceDesc{
 			ServerStreams: true,
 		},
 	},
-	Metadata: "dispatcher/api/proto/session.proto",
+	Metadata: "sessionmanager/api/proto/session.proto",
 }
