@@ -10,18 +10,16 @@ import (
 
 type sessionServiceServer struct {
 	pb.UnimplementedSessionServiceServer
-	sessions   session.SessionManager  // SessionManager Interface
-	userPool   session.UserSessionPool // userID -> sessionID 리스트 관리
+	manager    *session.SessionFacade
 	logger     lib.Logger
 	shutdownCh chan struct{}
 }
 
-func NewSessionServiceServer(logger lib.Logger, manager session.SessionManager, userPool session.UserSessionPool) pb.SessionServiceServer {
+func NewSessionServiceServer(logger lib.Logger, manager *session.SessionFacade) pb.SessionServiceServer {
 	return &sessionServiceServer{
-		sessions:   manager,
 		logger:     logger,
 		shutdownCh: make(chan struct{}),
-		userPool:   userPool,
+		manager:    manager,
 	}
 }
 
@@ -31,12 +29,11 @@ func (s *sessionServiceServer) Connect(req *pb.ConnectRequest, stream pb.Session
 	s.logger.Debugf("User connected: %d - %s", userId, sessionId)
 
 	// 세션 추가
-	s.sessions.Add(sessionId, stream)
-	s.userPool.Add(userId, sessionId)
+	s.manager.Add(userId, sessionId, stream)
+
 	// 연결 해제 시 정리
 	defer func() {
-		s.sessions.Remove(sessionId)
-		s.userPool.Remove(userId, sessionId)
+		s.manager.Remove(userId, sessionId)
 	}()
 
 	// Connect 직후 첫 메시지 전송
