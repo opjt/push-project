@@ -1,19 +1,19 @@
 package router
 
 import (
-	"push/common/lib"
+	"push/common/lib/logger"
 	"push/linker/internal/api/controller"
 	"push/linker/internal/pkg/gin"
 )
 
 type PushRouter struct {
-	logger         lib.Logger
+	logger         *logger.Logger
 	engine         gin.Engine
 	pushController controller.PushController
 }
 
 func NewPushRouter(
-	logger lib.Logger,
+	logger *logger.Logger,
 	engine gin.Engine,
 	pushController controller.PushController,
 

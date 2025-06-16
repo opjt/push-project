@@ -1,7 +1,7 @@
 package gin
 
 import (
-	"push/common/lib"
+	"push/common/lib/logger"
 
 	"github.com/gin-gonic/gin"
 )
@@ -11,8 +11,8 @@ type Engine struct {
 	ApiGroup *gin.RouterGroup
 }
 
-func NewEngine(logger lib.Logger) Engine {
-	gin.DefaultWriter = logger.GetGinLogger()
+func NewEngine(logger *logger.GinLogger) Engine {
+	gin.DefaultWriter = logger
 	engine := gin.New()
 
 	apiGroup := engine.Group("/api/v1")

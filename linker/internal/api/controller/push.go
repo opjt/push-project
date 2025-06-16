@@ -2,7 +2,7 @@ package controller
 
 import (
 	"net/http"
-	"push/common/lib"
+	"push/common/lib/logger"
 	"push/linker/internal/api/dto"
 	"push/linker/internal/service"
 	"strconv"
@@ -11,11 +11,11 @@ import (
 )
 
 type PushController struct {
-	logger  lib.Logger
+	logger  *logger.Logger
 	service service.PushService
 }
 
-func NewPushController(logger lib.Logger, service service.PushService) PushController {
+func NewPushController(logger *logger.Logger, service service.PushService) PushController {
 	return PushController{
 		service: service,
 		logger:  logger,

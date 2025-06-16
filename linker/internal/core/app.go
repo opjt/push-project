@@ -3,7 +3,8 @@ package core
 import (
 	"context"
 	"net/http"
-	"push/common/lib"
+	"push/common/lib/env"
+	"push/common/lib/logger"
 	"push/linker/internal/api/router"
 	"push/linker/internal/core/bootstrap"
 	"push/linker/internal/pkg/gin"
@@ -16,10 +17,10 @@ import (
 )
 
 func RunServer(opt fx.Option) {
-	logger := lib.GetLogger()
+	log, _ := logger.NewLogger(env.NewEnv())
 	opts := fx.Options(
 		fx.WithLogger(func() fxevent.Logger {
-			return logger.GetFxLogger()
+			return logger.NewFxLogger(log)
 		}),
 		fx.Provide(bootstrap.NewAppContext),
 		fx.Invoke(Run()),
@@ -28,7 +29,7 @@ func RunServer(opt fx.Option) {
 
 	ctx := context.Background()
 	if err := app.Start(ctx); err != nil {
-		logger.Fatal(err)
+		log.Fatal(err)
 	}
 
 	// 시그널 대기
@@ -38,17 +39,17 @@ func RunServer(opt fx.Option) {
 	defer cancel()
 
 	if err := app.Stop(stopCtx); err != nil {
-		logger.Error("Failed to stop app gracefully:", err)
+		log.Error("Failed to stop app gracefully:", err)
 	}
 }
 
 func Run() any {
 	return func(
 		lc fx.Lifecycle,
-		env lib.Env,
+		env env.Env,
 		engine gin.Engine,
 		route router.Routers,
-		logger lib.Logger,
+		logger *logger.Logger,
 		appCtx *bootstrap.AppContext,
 	) {
 		route.Setup()

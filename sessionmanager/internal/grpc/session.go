@@ -3,7 +3,7 @@ package grpc
 import (
 	"context"
 	"fmt"
-	"push/common/lib"
+	"push/common/lib/logger"
 	pb "push/sessionmanager/api/proto"
 	"push/sessionmanager/internal/dto"
 	"push/sessionmanager/internal/session"
@@ -13,11 +13,11 @@ import (
 type sessionServiceServer struct {
 	pb.UnimplementedSessionServiceServer
 	manager    *session.SessionFacade
-	logger     lib.Logger
+	logger     *logger.Logger
 	shutdownCh chan struct{}
 }
 
-func NewSessionServiceServer(logger lib.Logger, manager *session.SessionFacade) pb.SessionServiceServer {
+func NewSessionServiceServer(logger *logger.Logger, manager *session.SessionFacade) pb.SessionServiceServer {
 	return &sessionServiceServer{
 		logger:     logger,
 		shutdownCh: make(chan struct{}),

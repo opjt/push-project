@@ -4,7 +4,8 @@ import (
 	"context"
 	"net"
 
-	"push/common/lib"
+	"push/common/lib/env"
+	"push/common/lib/logger"
 	pb "push/sessionmanager/api/proto"
 
 	"go.uber.org/fx"
@@ -16,7 +17,7 @@ func NewGRPCServer() *grpc.Server {
 	return grpc.NewServer()
 }
 
-func RegisterGRPCServer(lc fx.Lifecycle, grpcServer *grpc.Server, service pb.SessionServiceServer, log lib.Logger, env lib.Env) {
+func RegisterGRPCServer(lc fx.Lifecycle, grpcServer *grpc.Server, service pb.SessionServiceServer, log *logger.Logger, env env.Env) {
 	svc := service.(*sessionServiceServer) // 타입 캐스팅
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {

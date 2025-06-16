@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"push/common/lib"
+	"push/common/lib/env"
 	"push/common/pkg/awsinfra"
 	"push/linker/internal/api/dto"
 
@@ -19,10 +19,10 @@ type Publisher interface {
 
 type publisher struct {
 	client *sns.Client
-	env    lib.Env
+	env    env.Env
 }
 
-func NewPublisher(cfg awsinfra.AwsConfig, env lib.Env) Publisher {
+func NewPublisher(cfg awsinfra.AwsConfig, env env.Env) Publisher {
 	return &publisher{
 		client: sns.NewFromConfig(cfg.Config),
 		env:    env,

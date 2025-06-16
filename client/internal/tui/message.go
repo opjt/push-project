@@ -9,7 +9,7 @@ import (
 	"push/client/internal/pkg/httpclient/message"
 	"push/client/internal/tui/state"
 	"push/client/internal/tui/style"
-	"push/common/lib"
+	"push/common/lib/logger"
 
 	"github.com/charmbracelet/bubbles/list"
 	"github.com/charmbracelet/bubbles/textarea"
@@ -36,7 +36,7 @@ type ChatModel struct {
 	width        int
 	height       int
 	focusArea    string // "textarea" or "messages"
-	logger       lib.Logger
+	logger       *logger.Logger
 
 	sessionClient grpc.SessionClient
 	messageCh     chan grpc.Message
@@ -45,7 +45,7 @@ type ChatModel struct {
 }
 
 // NewChatModel 내 메시지 리스트 초기화
-func NewChatModel(logger lib.Logger, user *state.User, client grpc.SessionClient) *ChatModel {
+func NewChatModel(logger *logger.Logger, user *state.User, client grpc.SessionClient) *ChatModel {
 
 	// 메시지 리스트 초기 아이템 없음
 	messages := []list.Item{}

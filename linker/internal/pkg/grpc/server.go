@@ -4,7 +4,8 @@ import (
 	"context"
 	"net"
 
-	"push/common/lib"
+	"push/common/lib/env"
+	"push/common/lib/logger"
 	pb "push/linker/api/proto"
 
 	"go.uber.org/fx"
@@ -17,7 +18,7 @@ func NewGRPCServer() *grpc.Server {
 }
 
 // gRPC 서버 시작 및 종료를 fx 라이프사이클 훅에 등록
-func RegisterGRPCServer(lc fx.Lifecycle, grpcServer *grpc.Server, service pb.MessageServiceServer, log lib.Logger, env lib.Env) {
+func RegisterGRPCServer(lc fx.Lifecycle, grpcServer *grpc.Server, service pb.MessageServiceServer, log *logger.Logger, env env.Env) {
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
 			lis, err := net.Listen("tcp", ":"+env.Linker.GrpcPort)

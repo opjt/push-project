@@ -3,7 +3,8 @@ package sqs
 import (
 	"context"
 	"errors"
-	"push/common/lib"
+	"push/common/lib/env"
+	"push/common/lib/logger"
 	"push/common/pkg/awsinfra"
 
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
@@ -15,13 +16,13 @@ type Consumer struct {
 	client    *sqs.Client
 	queueURL  string
 	ctx       context.Context
-	log       lib.Logger
+	log       *logger.Logger
 	msgChan   chan types.Message
 	workerNum int
 	handler   Handler
 }
 
-func NewConsumer(cfg awsinfra.AwsConfig, lc fx.Lifecycle, log lib.Logger, env lib.Env, handler Handler) *Consumer {
+func NewConsumer(cfg awsinfra.AwsConfig, lc fx.Lifecycle, log *logger.Logger, env env.Env, handler Handler) *Consumer {
 	ctx, cancel := context.WithCancel(context.Background())
 	client := sqs.NewFromConfig(cfg.Config)
 

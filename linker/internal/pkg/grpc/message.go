@@ -2,7 +2,7 @@ package grpc
 
 import (
 	"context"
-	"push/common/lib"
+	"push/common/lib/logger"
 	pb "push/linker/api/proto"
 	"push/linker/internal/api/dto"
 	"push/linker/internal/service"
@@ -12,10 +12,10 @@ type messageServiceServer struct {
 	pb.UnimplementedMessageServiceServer
 
 	service service.MessageService
-	logger  lib.Logger
+	logger  *logger.Logger
 }
 
-func NewMessageServiceServer(service service.MessageService, logger lib.Logger) pb.MessageServiceServer {
+func NewMessageServiceServer(service service.MessageService, logger *logger.Logger) pb.MessageServiceServer {
 	return &messageServiceServer{
 		service: service,
 		logger:  logger,

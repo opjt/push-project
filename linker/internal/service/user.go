@@ -2,7 +2,7 @@ package service
 
 import (
 	"context"
-	"push/common/lib"
+	"push/common/lib/logger"
 	"push/linker/dto"
 
 	"github.com/google/uuid"
@@ -17,13 +17,13 @@ type UserService interface {
 
 // User Domain Service
 type userService struct {
-	logger     lib.Logger
+	logger     *logger.Logger
 	db         *database.MariaDB
 	repository repository.UserRepository
 }
 
 func NewUserService(
-	logger lib.Logger,
+	logger *logger.Logger,
 	db *database.MariaDB,
 	repository repository.UserRepository,
 ) UserService {

@@ -3,7 +3,7 @@ package sqs
 import (
 	"context"
 	"encoding/json"
-	"push/common/lib"
+	"push/common/lib/logger"
 	msgTypes "push/linker/types"
 	"push/sender/internal/dto"
 	"time"
@@ -22,12 +22,12 @@ type Handler interface {
 }
 
 type handler struct {
-	log           lib.Logger
+	log           *logger.Logger
 	mclient       client.MessageClient
 	sessionClient sclient.SessionClient
 }
 
-func NewHandler(log lib.Logger, mclient client.MessageClient, sessionClient sclient.SessionClient) Handler {
+func NewHandler(log *logger.Logger, mclient client.MessageClient, sessionClient sclient.SessionClient) Handler {
 	return &handler{
 		log:           log,
 		mclient:       mclient,

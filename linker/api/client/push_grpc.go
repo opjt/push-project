@@ -3,7 +3,8 @@ package client
 import (
 	"context"
 	"fmt"
-	"push/common/lib"
+	"push/common/lib/env"
+	"push/common/lib/logger"
 	pb "push/linker/api/proto"
 
 	"go.uber.org/fx"
@@ -13,7 +14,7 @@ import (
 
 type messageClient struct {
 	client pb.MessageServiceClient
-	logger lib.Logger
+	logger *logger.Logger
 }
 
 type MessageClient interface {
@@ -21,7 +22,7 @@ type MessageClient interface {
 }
 
 // grpc client 생성자
-func NewMessageServiceClient(logger lib.Logger, lc fx.Lifecycle, env lib.Env) (MessageClient, error) {
+func NewMessageServiceClient(logger *logger.Logger, lc fx.Lifecycle, env env.Env) (MessageClient, error) {
 	// Linker gRPC 연결.
 	clientConn, err := grpc.NewClient("localhost:"+env.Linker.GrpcPort, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {

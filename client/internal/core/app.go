@@ -2,9 +2,9 @@ package core
 
 import (
 	"context"
-	"log"
 	"push/client/internal/tui"
-	"push/common/lib"
+	"push/common/lib/env"
+	"push/common/lib/logger"
 
 	tea "github.com/charmbracelet/bubbletea"
 
@@ -16,11 +16,11 @@ func RunApp() {
 
 	// Bubble Tea 종료 알림 채널 생성
 	teaDone := make(chan struct{})
-	logger := lib.GetLogger()
+	log, _ := logger.NewLogger(env.NewEnv())
 	app := fx.New(
 		Modules,
 		fx.WithLogger(func() fxevent.Logger {
-			return logger.GetFxLogger()
+			return logger.NewFxLogger(log)
 		}),
 		fx.Invoke(func(lc fx.Lifecycle, root *tui.RootModel) {
 			lc.Append(fx.Hook{
@@ -29,14 +29,14 @@ func RunApp() {
 						p := tea.NewProgram(root, tea.WithAltScreen())
 						root.TeaProgram = p
 						if _, err := p.Run(); err != nil {
-							logger.Error("Bubble Tea exited:", err)
+							log.Error("Bubble Tea exited:", err)
 						}
 						close(teaDone) // 종료 알림
 					}()
 					return nil
 				},
 				OnStop: func(ctx context.Context) error {
-					logger.Debug("App is stopping...")
+					log.Info("App is stopping...")
 					return nil
 				},
 			})

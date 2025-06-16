@@ -2,8 +2,8 @@ package service
 
 import (
 	"context"
-	"push/common/lib"
 
+	"push/common/lib/logger"
 	"push/linker/internal/api/dto"
 	"push/linker/internal/pkg/awssns"
 	"push/linker/internal/repository"
@@ -13,14 +13,14 @@ type PushService interface {
 	PostPush(context.Context, dto.PostPushDTO) (uint64, error)
 }
 type pushService struct {
-	logger         lib.Logger
+	logger         *logger.Logger
 	repository     repository.UserRepository
 	messageService MessageService
 	snsPublisher   awssns.Publisher
 }
 
 func NewPushService(
-	logger lib.Logger,
+	logger *logger.Logger,
 	repository repository.UserRepository,
 	messageService MessageService,
 	snsPublisher awssns.Publisher,

@@ -2,7 +2,7 @@ package awsinfra
 
 import (
 	"context"
-	"push/common/lib"
+	"push/common/lib/env"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -12,7 +12,7 @@ type AwsConfig struct {
 	Config aws.Config
 }
 
-func NewAwsConfig(env lib.Env) (AwsConfig, error) {
+func NewAwsConfig(env env.Env) (AwsConfig, error) {
 	mod := env.App.Stage
 
 	var cfg aws.Config

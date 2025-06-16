@@ -3,7 +3,7 @@ package controller
 import (
 	"net/http"
 	commondto "push/common/dto"
-	"push/common/lib"
+	"push/common/lib/logger"
 	"push/linker/dto"
 	"push/linker/internal/service"
 	"strconv"
@@ -12,11 +12,11 @@ import (
 )
 
 type MessageController struct {
-	logger  lib.Logger
+	logger  *logger.Logger
 	service service.MessageService
 }
 
-func NewMessageController(logger lib.Logger, service service.MessageService) MessageController {
+func NewMessageController(logger *logger.Logger, service service.MessageService) MessageController {
 	return MessageController{
 		service: service,
 		logger:  logger,

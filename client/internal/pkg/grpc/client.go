@@ -6,7 +6,8 @@ import (
 	"fmt"
 	"io"
 	"push/client/internal/tui/state"
-	"push/common/lib"
+	"push/common/lib/env"
+	"push/common/lib/logger"
 	pb "push/sessionmanager/api/proto"
 
 	"go.uber.org/fx"
@@ -24,14 +25,14 @@ type Message struct {
 
 type sessionClient struct {
 	client pb.SessionServiceClient
-	logger lib.Logger
+	logger *logger.Logger
 }
 
 type SessionClient interface {
 	Connect(context.Context, state.User, chan<- Message) error
 }
 
-func NewSessionServiceClient(logger lib.Logger, lc fx.Lifecycle, env lib.Env) (SessionClient, error) {
+func NewSessionServiceClient(logger *logger.Logger, lc fx.Lifecycle, env env.Env) (SessionClient, error) {
 	clientConn, err := grpc.NewClient("localhost:"+env.Session.Port, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return nil, fmt.Errorf("failed to dial gRPC: %w", err)

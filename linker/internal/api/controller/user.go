@@ -3,7 +3,7 @@ package controller
 import (
 	"net/http"
 	commondto "push/common/dto"
-	"push/common/lib"
+	"push/common/lib/logger"
 	"push/linker/dto"
 	"push/linker/internal/service"
 
@@ -11,11 +11,11 @@ import (
 )
 
 type UserController struct {
-	logger  lib.Logger
+	logger  *logger.Logger
 	service service.UserService
 }
 
-func NewUserController(logger lib.Logger, service service.UserService) UserController {
+func NewUserController(logger *logger.Logger, service service.UserService) UserController {
 	return UserController{
 		service: service,
 		logger:  logger,

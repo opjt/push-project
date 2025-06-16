@@ -1,19 +1,19 @@
 package router
 
 import (
-	"push/common/lib"
+	"push/common/lib/logger"
 	"push/linker/internal/api/controller"
 	"push/linker/internal/pkg/gin"
 )
 
 type UserRouter struct {
-	logger         lib.Logger
+	logger         *logger.Logger
 	engine         gin.Engine
 	userController controller.UserController
 }
 
 func NewUserRouter(
-	logger lib.Logger,
+	logger *logger.Logger,
 	engine gin.Engine,
 	userController controller.UserController,
 

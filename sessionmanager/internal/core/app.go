@@ -2,7 +2,8 @@ package core
 
 import (
 	"context"
-	"push/common/lib"
+	"push/common/lib/env"
+	"push/common/lib/logger"
 	"time"
 
 	"go.uber.org/fx"
@@ -10,12 +11,12 @@ import (
 )
 
 func RunServer(opt fx.Option) {
-	logger := lib.GetLogger()
+	log, _ := logger.NewLogger(env.NewEnv())
 
 	app := fx.New(
 		opt,
 		fx.WithLogger(func() fxevent.Logger {
-			return logger.GetFxLogger()
+			return logger.NewFxLogger(log)
 		}),
 	)
 
@@ -23,7 +24,7 @@ func RunServer(opt fx.Option) {
 	defer cancel()
 
 	if err := app.Start(ctx); err != nil {
-		logger.Fatal("Failed to start app:", err)
+		log.Fatal("Failed to start app:", err)
 	}
 
 	// 시그널 대기
@@ -33,6 +34,6 @@ func RunServer(opt fx.Option) {
 	defer cancel()
 
 	if err := app.Stop(stopCtx); err != nil {
-		logger.Error("Failed to stop app gracefully:", err)
+		log.Error("Failed to stop app gracefully:", err)
 	}
 }

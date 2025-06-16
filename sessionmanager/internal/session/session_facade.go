@@ -2,7 +2,7 @@ package session
 
 import (
 	"context"
-	"push/common/lib"
+	"push/common/lib/logger"
 	"push/linker/api/client"
 	linkerpb "push/linker/api/proto"
 	"push/linker/types"
@@ -13,11 +13,11 @@ import (
 type SessionFacade struct {
 	sessions        SessionManager  // sessionID -> stream
 	userSessionPool UserSessionPool // userID -> []sessionID
-	logger          lib.Logger
+	logger          *logger.Logger
 	rpc             client.MessageClient
 }
 
-func NewSessionFacade(sessions SessionManager, userPool UserSessionPool, logger lib.Logger, rpc client.MessageClient) *SessionFacade {
+func NewSessionFacade(sessions SessionManager, userPool UserSessionPool, logger *logger.Logger, rpc client.MessageClient) *SessionFacade {
 	return &SessionFacade{
 		sessions:        sessions,
 		userSessionPool: userPool,

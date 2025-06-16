@@ -3,7 +3,8 @@ package client
 import (
 	"context"
 	"fmt"
-	"push/common/lib"
+	"push/common/lib/env"
+	"push/common/lib/logger"
 	pb "push/sessionmanager/api/proto"
 
 	"go.uber.org/fx"
@@ -13,7 +14,7 @@ import (
 
 type sessionClient struct {
 	client pb.SessionServiceClient
-	logger lib.Logger
+	logger *logger.Logger
 }
 
 type SessionClient interface {
@@ -21,7 +22,7 @@ type SessionClient interface {
 }
 
 // grpc client 생성자
-func NewSessioneServiceClient(logger lib.Logger, lc fx.Lifecycle, env lib.Env) (SessionClient, error) {
+func NewSessioneServiceClient(logger *logger.Logger, lc fx.Lifecycle, env env.Env) (SessionClient, error) {
 
 	clientConn, err := grpc.NewClient("localhost:"+env.Session.Port, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
