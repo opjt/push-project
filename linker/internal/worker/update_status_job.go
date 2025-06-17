@@ -6,6 +6,7 @@ import (
 	"push/common/lib/logger"
 	"push/linker/internal/api/dto"
 	"push/linker/internal/service"
+	"sync"
 	"time"
 
 	"go.uber.org/fx"
@@ -19,6 +20,7 @@ type JobUpdateStatus struct {
 	ch      chan UpdateStatusJob
 	ctx     context.Context
 	service service.MessageService
+	wg      sync.WaitGroup
 	logger  *logger.Logger
 }
 
@@ -33,25 +35,18 @@ func NewJobUpdateStatus(lc fx.Lifecycle, service service.MessageService, logger 
 
 	lc.Append(fx.Hook{
 		OnStart: func(context.Context) error {
+			j.wg.Add(1) // 워커 1개
 			go j.startProcessor()
 			return nil
 		},
 		OnStop: func(context.Context) error {
-			cancel()
 			close(j.ch)
+			j.wg.Wait()
+			cancel()
 			return nil
 		},
 	})
 	return j
-}
-
-func RegisterJobUpdateStatus(lc fx.Lifecycle, service service.MessageService, logger *logger.Logger) {
-	lc.Append(fx.Hook{
-		OnStart: func(ctx context.Context) error {
-			NewJobUpdateStatus(lc, service, logger)
-			return nil
-		},
-	})
 }
 
 func (j *JobUpdateStatus) Enqueue(dto dto.UpdateMessageDTO) error {
@@ -67,18 +62,22 @@ func (j *JobUpdateStatus) Enqueue(dto dto.UpdateMessageDTO) error {
 }
 
 func (j *JobUpdateStatus) startProcessor() {
+	defer j.wg.Done()
 
-	ticker := time.NewTicker(3 * time.Second)
+	ticker := time.NewTicker(10 * time.Second)
 	defer ticker.Stop()
 
 	var batch []UpdateStatusJob
 
 	for {
 		select {
-		case <-j.ctx.Done():
-			return
 
-		case job := <-j.ch:
+		case job, ok := <-j.ch:
+			if !ok {
+				j.logger.Info("JobUpdateStatus processor stopped")
+				j.flush(batch)
+				return
+			}
 			batch = append(batch, job)
 
 		case <-ticker.C:
@@ -86,26 +85,33 @@ func (j *JobUpdateStatus) startProcessor() {
 				continue
 			}
 
-			// 1. 그룹핑
-			groupMap := make(map[dto.UpdateMessageField][]uint64)
-
-			for _, job := range batch {
-				key := dto.UpdateMessageField{
-					Status:   job.DTO.Status,
-					SnsMsgId: job.DTO.SnsMsgId,
-				}
-				groupMap[key] = append(groupMap[key], job.DTO.Id)
-			}
-
-			// 2. 그룹별로 처리
-			for key, ids := range groupMap {
-
-				if err := j.service.UpdateMessagesStatus(j.ctx, ids, key); err != nil {
-					j.logger.Errorf("Failed to batch update message status", err)
-				}
-			}
-
+			j.flush(batch)
 			batch = nil
+		}
+	}
+}
+
+func (j *JobUpdateStatus) flush(batch []UpdateStatusJob) {
+	if len(batch) == 0 {
+		return
+	}
+
+	// 1. 그룹핑
+	groupMap := make(map[dto.UpdateMessageField][]uint64)
+
+	for _, job := range batch {
+		key := dto.UpdateMessageField{
+			Status:   job.DTO.Status,
+			SnsMsgId: job.DTO.SnsMsgId,
+		}
+		groupMap[key] = append(groupMap[key], job.DTO.Id)
+	}
+	ctx, cancel := context.WithTimeout(j.ctx, 5*time.Second)
+	defer cancel()
+	// 2. 그룹별 처리
+	for key, ids := range groupMap {
+		if err := j.service.UpdateMessagesStatus(ctx, ids, key); err != nil {
+			j.logger.Errorf("Failed to batch update message status", err)
 		}
 	}
 }
