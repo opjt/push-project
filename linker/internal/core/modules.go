@@ -7,15 +7,17 @@ import (
 	"push/linker/internal/pkg/gin"
 	"push/linker/internal/repository"
 	"push/linker/internal/service"
+	"push/linker/internal/worker"
 
 	"go.uber.org/fx"
 )
 
 var CommonModules = fx.Options(
-	api.Module,
 	common.CommonModules,
-	pkg.Module,
+	api.Module,
 	repository.Module,
 	service.Module,
+	worker.Module,
+	pkg.Module,
 	fx.Provide(gin.NewEngine),
 )

@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"push/linker/internal/api/dto"
 	"push/linker/internal/model"
 	"push/linker/internal/pkg/database"
 	"push/linker/types"
@@ -13,6 +14,7 @@ import (
 type MessageRepository interface {
 	CreateMessage(ctx context.Context, msg *model.Message) (uint64, error)
 	UpdateMessage(ctx context.Context, msg *model.Message) error
+	UpdateMessages(ctx context.Context, dtos *dto.UpdateMessagesDTO) error
 	GetById(ctx context.Context, id uint) (*model.Message, error)
 	ReceiveMessage(ctx context.Context, msgId uint64) error
 }
@@ -56,6 +58,23 @@ func (r *messageRepository) UpdateMessage(ctx context.Context, msg *model.Messag
 		Where("id = ?", msg.ID).
 		Updates(updates).Error
 
+}
+func (r *messageRepository) UpdateMessages(ctx context.Context, dto *dto.UpdateMessagesDTO) error {
+	if len(dto.Ids) == 0 {
+		return nil
+	}
+
+	updates := map[string]interface{}{
+		"status": dto.Column.Status,
+	}
+	if dto.Column.SnsMsgId != "" {
+		updates["sns_msg_id"] = dto.Column.SnsMsgId
+	}
+
+	return r.db.WithContext(ctx).
+		Model(&model.Message{}).
+		Where("id IN ?", dto.Ids).
+		Updates(updates).Error
 }
 
 func (r *messageRepository) ReceiveMessage(ctx context.Context, msgId uint64) error {

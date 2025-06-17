@@ -12,6 +12,15 @@ type UpdateMessageDTO struct {
 	SnsMsgId string
 }
 
+type UpdateMessagesDTO struct {
+	Ids    []uint64
+	Column UpdateMessageField
+}
+type UpdateMessageField struct {
+	Status   string
+	SnsMsgId string
+}
+
 type ReceiveMessageDTO struct {
 	Id uint64
 }

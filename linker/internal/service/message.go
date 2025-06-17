@@ -14,6 +14,7 @@ import (
 type MessageService interface {
 	createMessage(context.Context, dto.CreateMessageDTO) (uint64, error)
 	UpdateMessageStatus(context.Context, dto.UpdateMessageDTO) error
+	UpdateMessagesStatus(context.Context, []uint64, dto.UpdateMessageField) error
 	ReceiveMessage(context.Context, uint64) error
 }
 
@@ -28,6 +29,7 @@ func NewMessageService(
 	logger *logger.Logger,
 	db *database.MariaDB,
 	repository repository.MessageRepository,
+
 ) MessageService {
 	return &messageService{
 		logger:     logger,
@@ -62,6 +64,15 @@ func (s *messageService) UpdateMessageStatus(ctx context.Context, dto dto.Update
 		msg.SentAt = &now
 	}
 	return s.repository.UpdateMessage(ctx, msg)
+}
+
+func (s *messageService) UpdateMessagesStatus(ctx context.Context, ids []uint64, column dto.UpdateMessageField) error {
+
+	dto := dto.UpdateMessagesDTO{
+		Ids:    ids,
+		Column: column,
+	}
+	return s.repository.UpdateMessages(ctx, &dto)
 }
 
 func (s *messageService) ReceiveMessage(ctx context.Context, msgId uint64) error {
