@@ -70,6 +70,9 @@ func (r *messageRepository) UpdateMessages(ctx context.Context, dto *dto.UpdateM
 	if dto.Column.SnsMsgId != "" {
 		updates["sns_msg_id"] = dto.Column.SnsMsgId
 	}
+	if dto.Column.SentAt != nil {
+		updates["sent_at"] = dto.Column.SentAt
+	}
 
 	return r.db.WithContext(ctx).
 		Model(&model.Message{}).

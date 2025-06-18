@@ -1,5 +1,7 @@
 package dto
 
+import "time"
+
 type CreateMessageDTO struct {
 	UserId  uint64
 	Title   string
@@ -19,4 +21,5 @@ type UpdateMessagesDTO struct {
 type UpdateMessageField struct {
 	Status   string
 	SnsMsgId string
+	SentAt   *time.Time
 }

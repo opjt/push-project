@@ -67,7 +67,10 @@ func (s *messageService) UpdateMessageStatus(ctx context.Context, dto dto.Update
 }
 
 func (s *messageService) UpdateMessagesStatus(ctx context.Context, ids []uint64, column dto.UpdateMessageField) error {
-
+	if column.Status == types.StatusSent {
+		now := time.Now()
+		column.SentAt = &now
+	}
 	dto := dto.UpdateMessagesDTO{
 		Ids:    ids,
 		Column: column,
