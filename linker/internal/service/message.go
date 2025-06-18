@@ -4,8 +4,9 @@ import (
 	"context"
 	"push/common/lib/logger"
 	"push/linker/internal/api/dto"
+	"push/linker/internal/job/manager"
+
 	"push/linker/internal/model"
-	"push/linker/internal/pkg/database"
 	"push/linker/internal/repository"
 	"push/linker/types"
 	"time"
@@ -16,25 +17,26 @@ type MessageService interface {
 	UpdateMessageStatus(context.Context, dto.UpdateMessageDTO) error
 	UpdateMessagesStatus(context.Context, []uint64, dto.UpdateMessageField) error
 	ReceiveMessage(context.Context, uint64) error
+	UpdateStatusByJob(dto dto.UpdateMessageDTO) error
 }
 
 // 메세지를 생성하고 관리하는 서비스.
 type messageService struct {
-	logger     *logger.Logger
-	db         *database.MariaDB
-	repository repository.MessageRepository
+	logger       *logger.Logger
+	repository   repository.MessageRepository
+	queueManager *manager.JobQueueManager
 }
 
 func NewMessageService(
 	logger *logger.Logger,
-	db *database.MariaDB,
 	repository repository.MessageRepository,
+	queueManager *manager.JobQueueManager,
 
 ) MessageService {
 	return &messageService{
-		logger:     logger,
-		db:         db,
-		repository: repository,
+		logger:       logger,
+		repository:   repository,
+		queueManager: queueManager,
 	}
 }
 
@@ -81,4 +83,9 @@ func (s *messageService) UpdateMessagesStatus(ctx context.Context, ids []uint64,
 func (s *messageService) ReceiveMessage(ctx context.Context, msgId uint64) error {
 
 	return s.repository.ReceiveMessage(ctx, msgId)
+}
+
+func (s *messageService) UpdateStatusByJob(dto dto.UpdateMessageDTO) error {
+
+	return s.queueManager.EnqUpdateStatus(dto)
 }

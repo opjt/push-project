@@ -4,6 +4,7 @@ import (
 	"context"
 	"push/common/lib/logger"
 	"push/linker/internal/api/dto"
+	"push/linker/internal/job/queue"
 	"push/linker/internal/service"
 	"push/linker/types"
 	"sync"
@@ -13,14 +14,14 @@ import (
 )
 
 type JobUpdateStatus struct {
-	ch      <-chan UpdateStatusJob
+	ch      <-chan queue.UpdateStatusJob
 	ctx     context.Context
 	service service.MessageService
 	wg      sync.WaitGroup
 	logger  *logger.Logger
 }
 
-func NewJobUpdateStatus(lc fx.Lifecycle, service service.MessageService, logger *logger.Logger, queue *UpdateStatusQueue) *JobUpdateStatus {
+func NewJobUpdateStatus(lc fx.Lifecycle, service service.MessageService, logger *logger.Logger, queue *queue.UpdateStatusQueue) *JobUpdateStatus {
 	ctx, cancel := context.WithCancel(context.Background())
 	j := &JobUpdateStatus{
 		ch:      queue.Channel(),
@@ -51,7 +52,7 @@ func (j *JobUpdateStatus) startProcessor() {
 	ticker := time.NewTicker(5 * time.Second)
 	defer ticker.Stop()
 
-	var batch []UpdateStatusJob
+	var batch []queue.UpdateStatusJob
 
 	for {
 		select {
@@ -75,7 +76,7 @@ func (j *JobUpdateStatus) startProcessor() {
 	}
 }
 
-func (j *JobUpdateStatus) flush(batch []UpdateStatusJob) {
+func (j *JobUpdateStatus) flush(batch []queue.UpdateStatusJob) {
 	if len(batch) == 0 {
 		return
 	}

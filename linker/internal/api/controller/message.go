@@ -6,7 +6,6 @@ import (
 	"push/common/lib/logger"
 	re "push/linker/dto"
 	"push/linker/internal/api/dto"
-	"push/linker/internal/job/manager"
 	"push/linker/internal/service"
 	"push/linker/types"
 	"strconv"
@@ -15,17 +14,14 @@ import (
 )
 
 type MessageController struct {
-	logger       *logger.Logger
-	service      service.MessageService
-	queueManager *manager.JobQueueManager
+	logger  *logger.Logger
+	service service.MessageService
 }
 
-func NewMessageController(logger *logger.Logger, service service.MessageService, queueManager *manager.JobQueueManager) MessageController {
+func NewMessageController(logger *logger.Logger, service service.MessageService) MessageController {
 	return MessageController{
 		service: service,
 		logger:  logger,
-
-		queueManager: queueManager,
 	}
 }
 
@@ -50,7 +46,7 @@ func (p MessageController) UpdateStatusToReceive(c *gin.Context) {
 		Id:     msgIdUint64,
 		Status: types.StatusSent,
 	}
-	if err := p.queueManager.Enqueue(dto); err != nil {
+	if err := p.service.UpdateStatusByJob(dto); err != nil {
 		p.logger.Error(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "error message"}) // TODO : 에러 처리 개선 필요.
 		return

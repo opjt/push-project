@@ -12,16 +12,14 @@ import (
 type messageServiceServer struct {
 	pb.UnimplementedMessageServiceServer
 
-	service      service.MessageService
-	queueManager *manager.JobQueueManager
-	logger       *logger.Logger
+	service service.MessageService
+	logger  *logger.Logger
 }
 
 func NewMessageServiceServer(service service.MessageService, queueManager *manager.JobQueueManager, logger *logger.Logger) pb.MessageServiceServer {
 	return &messageServiceServer{
-		service:      service,
-		logger:       logger,
-		queueManager: queueManager,
+		service: service,
+		logger:  logger,
 	}
 }
 
@@ -32,7 +30,7 @@ func (s *messageServiceServer) UpdateStatus(ctx context.Context, req *pb.ReqUpda
 		Status:   req.Status,
 		SnsMsgId: req.SnsMsgId,
 	}
-	if err := s.queueManager.Enqueue(dto); err != nil {
+	if err := s.service.UpdateStatusByJob(dto); err != nil {
 		s.logger.Error(err)
 	}
 
