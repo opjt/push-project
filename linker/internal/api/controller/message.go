@@ -4,22 +4,28 @@ import (
 	"net/http"
 	commondto "push/common/dto"
 	"push/common/lib/logger"
-	"push/linker/dto"
+	re "push/linker/dto"
+	"push/linker/internal/api/dto"
 	"push/linker/internal/service"
+	"push/linker/internal/worker"
+	"push/linker/types"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
 
 type MessageController struct {
-	logger  *logger.Logger
-	service service.MessageService
+	logger          *logger.Logger
+	service         service.MessageService
+	jobUpdateStatus *worker.JobUpdateStatus
 }
 
-func NewMessageController(logger *logger.Logger, service service.MessageService) MessageController {
+func NewMessageController(logger *logger.Logger, service service.MessageService, jobUpdateStatus *worker.JobUpdateStatus) MessageController {
 	return MessageController{
 		service: service,
 		logger:  logger,
+
+		jobUpdateStatus: jobUpdateStatus,
 	}
 }
 
@@ -32,23 +38,26 @@ func (p MessageController) UpdateStatusToReceive(c *gin.Context) {
 	}
 	msgIdUint64 := uint64(msgId)
 
-	var req dto.UpdateStatusReq
+	var reqDto re.UpdateStatusReq
 
-	if err := c.ShouldBindJSON(&req); err != nil {
+	if err := c.ShouldBindJSON(&reqDto); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	ctx := c.Request.Context()
-
-	if err := p.service.ReceiveMessage(ctx, msgIdUint64); err != nil {
+	// ctx := c.Request.Context()
+	dto := dto.UpdateMessageDTO{
+		Id:     msgIdUint64,
+		Status: types.StatusSent,
+	}
+	if err := p.jobUpdateStatus.Enqueue(dto); err != nil {
 		p.logger.Error(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "error message"}) // TODO : 에러 처리 개선 필요.
 		return
 	}
 
-	res := commondto.CommonResponse[dto.UpdateStatusRes]{}
-	res.Data = dto.UpdateStatusRes{MsgId: msgIdUint64}
+	res := commondto.CommonResponse[re.UpdateStatusRes]{}
+	res.Data = re.UpdateStatusRes{MsgId: msgIdUint64}
 	c.JSON(200, res)
 
 }

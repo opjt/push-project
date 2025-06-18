@@ -6,6 +6,7 @@ import (
 	"push/common/lib/logger"
 	"push/linker/internal/api/dto"
 	"push/linker/internal/service"
+	"push/linker/types"
 	"sync"
 	"time"
 
@@ -64,7 +65,7 @@ func (j *JobUpdateStatus) Enqueue(dto dto.UpdateMessageDTO) error {
 func (j *JobUpdateStatus) startProcessor() {
 	defer j.wg.Done()
 
-	ticker := time.NewTicker(10 * time.Second)
+	ticker := time.NewTicker(5 * time.Second)
 	defer ticker.Stop()
 
 	var batch []UpdateStatusJob
@@ -96,22 +97,54 @@ func (j *JobUpdateStatus) flush(batch []UpdateStatusJob) {
 		return
 	}
 
-	// 1. 그룹핑
-	groupMap := make(map[dto.UpdateMessageField][]uint64)
+	// ID별 최신 상태만 유지
+	type grouped struct {
+		Status   string
+		SnsMsgId string
+	}
+	idMap := make(map[uint64]grouped)
+	j.logger.Info(batch)
 
 	for _, job := range batch {
-		key := dto.UpdateMessageField{
-			Status:   job.DTO.Status,
-			SnsMsgId: job.DTO.SnsMsgId,
+		id := job.DTO.Id
+		newStatus := job.DTO.Status
+		newSnsMsgId := job.DTO.SnsMsgId
+
+		prev, exists := idMap[id]
+		if !exists {
+			idMap[id] = grouped{Status: newStatus, SnsMsgId: newSnsMsgId}
+			continue
 		}
-		groupMap[key] = append(groupMap[key], job.DTO.Id)
+
+		// sent가 있으면 sent 우선
+		if newStatus == types.StatusSent {
+			// 기존에 sending이면 snsmsgid 유지
+			if prev.SnsMsgId != "" && newSnsMsgId == "" {
+				newSnsMsgId = prev.SnsMsgId
+			}
+			idMap[id] = grouped{Status: types.StatusSent, SnsMsgId: newSnsMsgId}
+		} else if newStatus == types.StatusDeferred {
+			idMap[id] = grouped{Status: types.StatusDeferred, SnsMsgId: prev.SnsMsgId}
+		}
 	}
+
+	// 그룹핑: (status, snsmsgid) 조합으로
+	groupMap := make(map[dto.UpdateMessageField][]uint64)
+	for id, info := range idMap {
+		key := dto.UpdateMessageField{
+			Status:   info.Status,
+			SnsMsgId: info.SnsMsgId,
+		}
+		groupMap[key] = append(groupMap[key], id)
+	}
+
+	// 전송
 	ctx, cancel := context.WithTimeout(j.ctx, 5*time.Second)
 	defer cancel()
-	// 2. 그룹별 처리
+
 	for key, ids := range groupMap {
 		if err := j.service.UpdateMessagesStatus(ctx, ids, key); err != nil {
-			j.logger.Errorf("Failed to batch update message status", err)
+			j.logger.Errorf("Failed to batch update message status: %v", err)
 		}
 	}
 }
