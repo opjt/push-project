@@ -18,7 +18,7 @@ func NewUpdateStatusQueue() *UpdateStatusQueue {
 	}
 }
 
-func (m *UpdateStatusQueue) Enqueue(dto dto.UpdateMessageDTO) error {
+func (m *UpdateStatusQueue) enqueue(dto dto.UpdateMessageDTO) error {
 	select {
 	case m.ch <- UpdateStatusJob{DTO: dto}:
 		return nil

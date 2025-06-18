@@ -4,11 +4,11 @@ import (
 	"context"
 	"push/common/lib/logger"
 	"push/linker/internal/api/dto"
-	"push/linker/internal/job/manager"
+	"push/linker/internal/job/queue"
+	"push/linker/types"
 
 	"push/linker/internal/model"
 	"push/linker/internal/repository"
-	"push/linker/types"
 	"time"
 )
 
@@ -24,13 +24,13 @@ type MessageService interface {
 type messageService struct {
 	logger       *logger.Logger
 	repository   repository.MessageRepository
-	queueManager *manager.JobQueueManager
+	queueManager *queue.JobQueueManager
 }
 
 func NewMessageService(
 	logger *logger.Logger,
 	repository repository.MessageRepository,
-	queueManager *manager.JobQueueManager,
+	queueManager *queue.JobQueueManager,
 
 ) MessageService {
 	return &messageService{

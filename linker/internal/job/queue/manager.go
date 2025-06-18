@@ -1,15 +1,14 @@
-package manager
+package queue
 
 import (
 	"push/linker/internal/api/dto"
-	"push/linker/internal/job/queue"
 )
 
 type JobQueueManager struct {
-	updateStatusQ *queue.UpdateStatusQueue
+	updateStatusQ *UpdateStatusQueue
 }
 
-func NewJobQueueManager(updateStatusQ *queue.UpdateStatusQueue) *JobQueueManager {
+func NewJobQueueManager(updateStatusQ *UpdateStatusQueue) *JobQueueManager {
 	return &JobQueueManager{
 		updateStatusQ: updateStatusQ,
 	}
@@ -17,5 +16,5 @@ func NewJobQueueManager(updateStatusQ *queue.UpdateStatusQueue) *JobQueueManager
 
 func (m *JobQueueManager) EnqUpdateStatus(dto dto.UpdateMessageDTO) error {
 	// 향후 로깅, 트레이싱, 중복검사, 통계 등 확장 가능
-	return m.updateStatusQ.Enqueue(dto)
+	return m.updateStatusQ.enqueue(dto)
 }

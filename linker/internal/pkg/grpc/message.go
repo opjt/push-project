@@ -5,7 +5,7 @@ import (
 	"push/common/lib/logger"
 	pb "push/linker/api/proto"
 	"push/linker/internal/api/dto"
-	"push/linker/internal/job/manager"
+	"push/linker/internal/job/queue"
 	"push/linker/internal/service"
 )
 
@@ -16,7 +16,7 @@ type messageServiceServer struct {
 	logger  *logger.Logger
 }
 
-func NewMessageServiceServer(service service.MessageService, queueManager *manager.JobQueueManager, logger *logger.Logger) pb.MessageServiceServer {
+func NewMessageServiceServer(service service.MessageService, queueManager *queue.JobQueueManager, logger *logger.Logger) pb.MessageServiceServer {
 	return &messageServiceServer{
 		service: service,
 		logger:  logger,
