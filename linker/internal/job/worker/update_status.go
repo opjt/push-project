@@ -2,7 +2,6 @@ package worker
 
 import (
 	"context"
-	"fmt"
 	"push/common/lib/logger"
 	"push/linker/internal/api/dto"
 	"push/linker/internal/service"
@@ -13,22 +12,18 @@ import (
 	"go.uber.org/fx"
 )
 
-type UpdateStatusJob struct {
-	DTO dto.UpdateMessageDTO
-}
-
 type JobUpdateStatus struct {
-	ch      chan UpdateStatusJob
+	ch      <-chan UpdateStatusJob
 	ctx     context.Context
 	service service.MessageService
 	wg      sync.WaitGroup
 	logger  *logger.Logger
 }
 
-func NewJobUpdateStatus(lc fx.Lifecycle, service service.MessageService, logger *logger.Logger) *JobUpdateStatus {
+func NewJobUpdateStatus(lc fx.Lifecycle, service service.MessageService, logger *logger.Logger, queue *UpdateStatusQueue) *JobUpdateStatus {
 	ctx, cancel := context.WithCancel(context.Background())
 	j := &JobUpdateStatus{
-		ch:      make(chan UpdateStatusJob, 1000),
+		ch:      queue.Channel(),
 		ctx:     ctx,
 		service: service,
 		logger:  logger,
@@ -41,25 +36,13 @@ func NewJobUpdateStatus(lc fx.Lifecycle, service service.MessageService, logger 
 			return nil
 		},
 		OnStop: func(context.Context) error {
-			close(j.ch)
+			queue.Close()
 			j.wg.Wait()
 			cancel()
 			return nil
 		},
 	})
 	return j
-}
-
-func (j *JobUpdateStatus) Enqueue(dto dto.UpdateMessageDTO) error {
-	job := UpdateStatusJob{DTO: dto}
-	select {
-	case j.ch <- job:
-
-		return nil
-	default:
-		// 채널이 가득 찼을 경우 개선 필요
-		return fmt.Errorf("UpdateStatusQueue is full, dropping job")
-	}
 }
 
 func (j *JobUpdateStatus) startProcessor() {
@@ -103,7 +86,6 @@ func (j *JobUpdateStatus) flush(batch []UpdateStatusJob) {
 		SnsMsgId string
 	}
 	idMap := make(map[uint64]grouped)
-	j.logger.Info(batch)
 
 	for _, job := range batch {
 		id := job.DTO.Id

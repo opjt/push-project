@@ -3,11 +3,11 @@ package core
 import (
 	"push/common"
 	"push/linker/internal/api"
+	"push/linker/internal/job"
 	"push/linker/internal/pkg"
 	"push/linker/internal/pkg/gin"
 	"push/linker/internal/repository"
 	"push/linker/internal/service"
-	"push/linker/internal/worker"
 
 	"go.uber.org/fx"
 )
@@ -17,7 +17,7 @@ var CommonModules = fx.Options(
 	api.Module,
 	repository.Module,
 	service.Module,
-	worker.Module,
+	job.Module,
 	pkg.Module,
 	fx.Provide(gin.NewEngine),
 )

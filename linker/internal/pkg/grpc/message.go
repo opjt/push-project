@@ -5,23 +5,23 @@ import (
 	"push/common/lib/logger"
 	pb "push/linker/api/proto"
 	"push/linker/internal/api/dto"
+	"push/linker/internal/job/manager"
 	"push/linker/internal/service"
-	"push/linker/internal/worker"
 )
 
 type messageServiceServer struct {
 	pb.UnimplementedMessageServiceServer
 
-	service         service.MessageService
-	jobUpdateStatus *worker.JobUpdateStatus
-	logger          *logger.Logger
+	service      service.MessageService
+	queueManager *manager.JobQueueManager
+	logger       *logger.Logger
 }
 
-func NewMessageServiceServer(service service.MessageService, jobUpdateStatus *worker.JobUpdateStatus, logger *logger.Logger) pb.MessageServiceServer {
+func NewMessageServiceServer(service service.MessageService, queueManager *manager.JobQueueManager, logger *logger.Logger) pb.MessageServiceServer {
 	return &messageServiceServer{
-		service:         service,
-		logger:          logger,
-		jobUpdateStatus: jobUpdateStatus,
+		service:      service,
+		logger:       logger,
+		queueManager: queueManager,
 	}
 }
 
@@ -32,7 +32,7 @@ func (s *messageServiceServer) UpdateStatus(ctx context.Context, req *pb.ReqUpda
 		Status:   req.Status,
 		SnsMsgId: req.SnsMsgId,
 	}
-	if err := s.jobUpdateStatus.Enqueue(dto); err != nil {
+	if err := s.queueManager.Enqueue(dto); err != nil {
 		s.logger.Error(err)
 	}
 
