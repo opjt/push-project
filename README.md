@@ -36,8 +36,11 @@ graph LR
 
 ### 서비스
 
-- [Linker](linker/README.md): 메시지를 SNS에 발행하는 Publisher
-- [sender](dispatcher/README.md): SQS로부터 메시지를 읽고 클라이언트에 전달하는 Sender
+> 서비스 별 상세 기능은 아래 링크를 참고해 주세요.
+
+- [Linker](linker/README.md): 메시지를 수집하고 AWS SNS 토픽에 발행하는 역할을 합니다. 알림 전송의 시작점이 되는 Publisher입니다.
+- [sender](sender/README.md): AWS SQS로부터 메시지를 비동기적으로 소비하고, 이를 세션 매니저에게 전달하는 중간 처리 역할을 수행합니다.
+- [session-manager](sessionmanager/README.md): 클라이언트(goCLi)와 gRPC 스트림을 통해 세션을 유지하며, 전달받은 메시지를 실시간으로 사용자에게 전송합니다.
 
 ## 프로젝트 실행하기 (개발환경)
 
@@ -61,5 +64,6 @@ graph LR
 
      ```bash
      go run linker/main.go # linker 서비스 실행
-     go run dispatcher/main.go # sender, session-manager 실행
+     go run sessionmanager/main.go #  session-manager 실행
+     go run sender/main.go #  session-manager 실행
      ```
