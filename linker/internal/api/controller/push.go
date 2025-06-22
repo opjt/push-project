@@ -48,7 +48,7 @@ func (p PushController) PostPush(c *gin.Context) {
 	id, err := p.service.PostPush(ctx, dto)
 	if err != nil {
 		p.logger.Error(err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "error message"}) // TODO : 에러 처리 개선 필요.
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	c.JSON(200, gin.H{"message_id": id})

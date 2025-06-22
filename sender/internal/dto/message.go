@@ -1,10 +1,6 @@
 package dto
 
-type Message struct {
-	Id     string
-	Status int
-}
-
+// SQS 메세지 구조
 type SqsEnvelope struct {
 	Type              string `json:"Type"`
 	MessageId         string `json:"MessageId"`

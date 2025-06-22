@@ -22,6 +22,9 @@ func NewUserController(logger *logger.Logger, service service.UserService) UserC
 	}
 }
 
+// 클라이언트에서 사용자 로그인을 위해 사용하는 endpoint
+// POST /api/v1/auth/login
+// 추후 jwt 를 통해 클라이언트 -> linker로 메세지 변경 요청시 인증/인가 시스템 구현 필요.
 func (u UserController) Login(c *gin.Context) {
 	var req dto.AuthLoginReq
 

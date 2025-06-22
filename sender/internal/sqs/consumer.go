@@ -31,7 +31,7 @@ func NewConsumer(cfg awsinfra.AwsConfig, lc fx.Lifecycle, log *logger.Logger, en
 		queueURL:  env.Aws.PushQueueUrl,
 		ctx:       ctx,
 		log:       log,
-		msgChan:   make(chan types.Message, 100),
+		msgChan:   make(chan types.Message, 1000),
 		workerNum: 5,
 		handler:   handler,
 	}
@@ -115,7 +115,10 @@ func (c *Consumer) worker(id int) {
 	}
 }
 
+// 실제 메세지 핸들링 로직.
+// 메세지를 삭제하지 않으면 VisibilityTimeout 이후에 큐에 보여지고 다시 소비됨.
 func (c *Consumer) processMessage(msg types.Message) {
+	//핸들러에게 위임.
 	err := c.handler.HandleMessage(c.ctx, msg)
 	if err != nil {
 		c.log.Errorf("Message handling failed: %v", err)

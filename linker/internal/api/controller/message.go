@@ -41,14 +41,13 @@ func (p MessageController) UpdateStatusToReceive(c *gin.Context) {
 		return
 	}
 
-	// ctx := c.Request.Context()
 	dto := dto.UpdateMessageDTO{
 		Id:     msgIdUint64,
 		Status: types.StatusSent,
 	}
 	if err := p.service.UpdateStatusByJob(dto); err != nil {
 		p.logger.Error(err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "error message"}) // TODO : 에러 처리 개선 필요.
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 

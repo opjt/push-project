@@ -42,6 +42,10 @@ graph LR
 - [sender](sender/README.md): AWS SQS로부터 메시지를 비동기적으로 소비하고, 이를 세션 매니저에게 전달하는 중간 처리 역할을 수행합니다.
 - [session-manager](sessionmanager/README.md): 클라이언트(goCLi)와 gRPC 스트림을 통해 세션을 유지하며, 전달받은 메시지를 실시간으로 사용자에게 전송합니다.
 
+## 프로젝트 중 겪은 고민과 해결책
+
+- [메시지 상태 업데이트 책임 위치 및 처리 방식 고민](https://opjt.github.io/Project/push-project/messageUpdate.html)
+
 ## 프로젝트 실행하기 (개발환경)
 
 1. **환경변수 설정**
