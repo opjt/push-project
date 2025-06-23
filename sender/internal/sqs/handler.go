@@ -3,6 +3,7 @@ package sqs
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"push/common/lib/logger"
 	msgTypes "push/linker/types"
 	"push/sender/internal/dto"
@@ -38,8 +39,7 @@ func NewHandler(log *logger.Logger, mclient client.MessageClient, sessionClient 
 func (h *handler) HandleMessage(ctx context.Context, msg types.Message) error {
 	pushMsg, err := parseSqsMessage(msg)
 	if err != nil {
-		h.log.Errorf("Failed to parse message: %v", err)
-		return err
+		return fmt.Errorf("failed to parse message: %w", err)
 	}
 
 	h.log.Infof("Received push message: %+v", pushMsg)
@@ -48,8 +48,7 @@ func (h *handler) HandleMessage(ctx context.Context, msg types.Message) error {
 
 	// Linker에게 MessageStatus Update 요청
 	if _, err = h.mclient.UpdateStatus(ctx, &pb.ReqUpdateStatus{Id: uint64(pushMsg.MsgID), Status: msgTypes.StatusSending, SnsMsgId: *msg.MessageId}); err != nil {
-		h.log.Errorf("Failed to update message status: %v", err)
-		return err
+		return fmt.Errorf("failed to update message status: %w", err)
 	}
 	// SessionManager에게 메세지 전송 요청
 	return h.sendPushMessage(pushMsg)
