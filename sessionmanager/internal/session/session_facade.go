@@ -1,6 +1,7 @@
 package session
 
 import (
+	"fmt"
 	"push/common/lib/logger"
 	"push/linker/api/client"
 	pb "push/sessionmanager/api/proto"
@@ -39,24 +40,41 @@ func (r *SessionFacade) Remove(userID uint64, sessionID string) {
 func (r *SessionFacade) SendMessageToUser(pushDto *dto.Push) (int, error) {
 	userId := pushDto.UserId
 	sessionIDs := r.userSessionPool.GetSessionIDs(userId)
-	sendCount := 0 // 전송된 메세지 수
+
 	if len(sessionIDs) == 0 {
-		//유저와 연결된 세션이 없을 경우.
-		return sendCount, nil
+		r.logger.Debugf("No sessions found for user %d", userId)
+		return 0, nil
 	}
+
+	var (
+		sendCount int
+		errs      []error
+	)
 
 	for _, sid := range sessionIDs {
 		stream, ok := r.sessions.Get(sid)
 		if !ok {
-			r.logger.Warnf("Session %s for user %s not found", sid, userId)
+			errs = append(errs, fmt.Errorf("session %s not found", sid))
 			continue
 		}
-		err := stream.Send(&pb.ServerMessage{MsgId: pushDto.MsgId, Title: pushDto.Title, Body: pushDto.Body})
+
+		err := stream.Send(&pb.ServerMessage{
+			MsgId: pushDto.MsgId,
+			Title: pushDto.Title,
+			Body:  pushDto.Body,
+		})
 		if err != nil {
-			r.logger.Errorf("Failed to send message to session %s (user %s): %v", sid, userId, err)
+			errs = append(errs, fmt.Errorf("failed to send to session %s: %w", sid, err))
 			continue
 		}
+		r.logger.Debugf("Message sent to session %d - %s", userId, sid)
 		sendCount++
 	}
+
+	// 여러 에러가 있을 경우 병합해서 리턴
+	if len(errs) > 0 {
+		return sendCount, fmt.Errorf("some messages failed to send: %v", errs)
+	}
+
 	return sendCount, nil
 }
