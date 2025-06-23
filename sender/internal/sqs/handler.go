@@ -66,11 +66,17 @@ func (h *handler) sendPushMessage(pushMsg *dto.PushMessage) error {
 		},
 	}
 	result, err := h.sessionClient.PushMessage(context.Background(), &pushReq)
-	if !result.Success {
-		h.mclient.UpdateStatus(context.Background(), &pb.ReqUpdateStatus{Id: uint64(pushMsg.MsgID), Status: msgTypes.StatusDeferred}) // TODO: 에러처리 필요.
-		return nil
+	if err != nil {
+		return err
 	}
-	return err
+	if !result.Success {
+		_, updateErr := h.mclient.UpdateStatus(context.Background(), &pb.ReqUpdateStatus{
+			Id:     uint64(pushMsg.MsgID),
+			Status: msgTypes.StatusDeferred,
+		})
+		return updateErr
+	}
+	return nil
 }
 
 // SQS.Message 를 json.Unmarshal 하는 함수
