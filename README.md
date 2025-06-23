@@ -6,6 +6,8 @@
 
 본 프로젝트는 **메시지 큐**를 활용하여 내구성과 확장성을 확보한 Push 알림 전송 서버를 구축하는 개인 학습 프로젝트입니다.
 
+<!-- ![project_thumbnail](https://github.com/user-attachments/assets/80422f6a-7c2f-4bd2-809a-21137b05dd4c) -->
+
 ### 프로젝트 목적
 
 - `분산 시스템`: 사용자 세션을 분산하여 고가용성과 확장성을 갖춘 구조를 이해하고 설계합니다.
@@ -42,9 +44,9 @@ graph LR
 - [sender](sender/README.md): AWS SQS로부터 메시지를 비동기적으로 소비하고, 이를 세션 매니저에게 전달하는 중간 처리 역할을 수행합니다.
 - [session-manager](sessionmanager/README.md): 클라이언트(goCLi)와 gRPC 스트림을 통해 세션을 유지하며, 전달받은 메시지를 실시간으로 사용자에게 전송합니다.
 
-## 프로젝트 중 겪은 고민과 해결책
+## 프로젝트 중 겪은 고민과 해결방안
 
-- [메시지 상태 업데이트 책임 위치 및 처리 방식 고민](https://opjt.github.io/Project/push-project/messageUpdate.html)
+- [메시지 상태 업데이트 책임 위치 및 처리 방식](https://opjt.github.io/Project/push-project/messageUpdate.html)
 
 ## 프로젝트 실행하기 (개발환경)
 

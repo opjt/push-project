@@ -25,7 +25,6 @@ func NewSessionServiceServer(logger *logger.Logger, manager *session.SessionFaca
 	}
 }
 
-// vontext.Context, *PushRequest) (*PushResponse, error)
 func (s *sessionServiceServer) PushMessage(ctx context.Context, req *pb.PushRequest) (*pb.PushResponse, error) {
 	dto := &dto.Push{
 		UserId: req.GetUserId(),
@@ -33,10 +32,14 @@ func (s *sessionServiceServer) PushMessage(ctx context.Context, req *pb.PushRequ
 		Body:   req.Message.GetBody(),
 		MsgId:  req.Message.MsgId,
 	}
-	if err := s.manager.SendMessageToUser(dto); err != nil {
-		return &pb.PushResponse{Success: false}, err
+	sendCount, err := s.manager.SendMessageToUser(dto)
+
+	resFlag := false
+	if sendCount != 0 { // 만약 전송된 메시지 수가 0개가 아닐 경우 성공
+		resFlag = true
 	}
-	return &pb.PushResponse{Success: true}, nil
+
+	return &pb.PushResponse{Success: resFlag}, err
 
 }
 func (s *sessionServiceServer) Connect(req *pb.ConnectRequest, stream pb.SessionService_ConnectServer) error {

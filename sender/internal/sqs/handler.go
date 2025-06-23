@@ -65,8 +65,9 @@ func (h *handler) sendPushMessage(pushMsg *dto.PushMessage) error {
 			Body:  pushMsg.Body,
 		},
 	}
-	_, err := h.sessionClient.PushMessage(context.Background(), &pushReq) // TODO : sessionmanager 장애시 예외처리.
-	if err != nil {
+	result, err := h.sessionClient.PushMessage(context.Background(), &pushReq)
+	if !result.Success {
+		h.mclient.UpdateStatus(context.Background(), &pb.ReqUpdateStatus{Id: uint64(pushMsg.MsgID), Status: msgTypes.StatusDeferred}) // TODO: 에러처리 필요.
 		return err
 	}
 	return nil

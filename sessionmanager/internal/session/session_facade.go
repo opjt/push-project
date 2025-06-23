@@ -1,11 +1,8 @@
 package session
 
 import (
-	"context"
 	"push/common/lib/logger"
 	"push/linker/api/client"
-	linkerpb "push/linker/api/proto"
-	"push/linker/types"
 	pb "push/sessionmanager/api/proto"
 	"push/sessionmanager/internal/dto"
 )
@@ -39,12 +36,13 @@ func (r *SessionFacade) Remove(userID uint64, sessionID string) {
 }
 
 // 유저에게 메시지 전송
-func (r *SessionFacade) SendMessageToUser(pushDto *dto.Push) error {
+func (r *SessionFacade) SendMessageToUser(pushDto *dto.Push) (int, error) {
 	userId := pushDto.UserId
 	sessionIDs := r.userSessionPool.GetSessionIDs(userId)
+	sendCount := 0 // 전송된 메세지 수
 	if len(sessionIDs) == 0 {
-		r.updateMessageStatus(context.Background(), pushDto.MsgId)
-		return nil
+		//유저와 연결된 세션이 없을 경우.
+		return sendCount, nil
 	}
 
 	for _, sid := range sessionIDs {
@@ -56,15 +54,9 @@ func (r *SessionFacade) SendMessageToUser(pushDto *dto.Push) error {
 		err := stream.Send(&pb.ServerMessage{MsgId: pushDto.MsgId, Title: pushDto.Title, Body: pushDto.Body})
 		if err != nil {
 			r.logger.Errorf("Failed to send message to session %s (user %s): %v", sid, userId, err)
+			continue
 		}
+		sendCount++
 	}
-	return nil
-}
-
-func (r *SessionFacade) updateMessageStatus(ctx context.Context, msgId uint64) {
-	_, err := r.rpc.UpdateStatus(ctx, &linkerpb.ReqUpdateStatus{Id: msgId, Status: types.StatusDeferred})
-	if err != nil {
-		r.logger.Warnf("Failed to update message status: %v", err)
-	}
-
+	return sendCount, nil
 }
