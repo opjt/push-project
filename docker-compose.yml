@@ -20,5 +20,15 @@ services:
       - "${MARIA_PORT}:${MARIA_PORT}"
     volumes:
       - ./tmp/mariadb-data:/var/lib/mysql
-volumes:
-  mariadb-data:
+  redis:
+    image: redis:7.0
+    container_name: local-redis
+    ports:
+      - "${REDIS_PORT}:${REDIS_PORT}"
+    volumes:
+      - ./tmp/redis-data:/data # TODO: Named Volume으로 변경 필요
+    restart: always
+
+# volumes:
+#   mariadb-data:
+#   redis-data:

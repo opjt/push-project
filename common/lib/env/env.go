@@ -15,6 +15,7 @@ type Env struct {
 	Linker  Linker  `env:", prefix=LINKER_"`
 	Session Session `env:", prefix=SESSION_"`
 	DB      DB      `env:", prefix=MARIA_"`
+	Redis   Redis   `env:", prefix=REDIS_"`
 }
 
 type App struct {
@@ -44,6 +45,9 @@ type DB struct {
 	Database string `env:"DATABASE"`
 	Host     string `env:"HOST"`
 	Port     string `env:"PORT"`
+}
+type Redis struct {
+	Port string `env:"PORT"`
 }
 
 func validateEnv(e *Env) {

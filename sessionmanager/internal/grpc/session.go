@@ -25,6 +25,7 @@ func NewSessionServiceServer(logger *logger.Logger, manager *session.SessionFaca
 	}
 }
 
+// session에 메시지 전송.
 func (s *sessionServiceServer) PushMessage(ctx context.Context, req *pb.PushRequest) (*pb.PushResponse, error) {
 	dto := &dto.Push{
 		UserId: req.GetUserId(),
@@ -42,6 +43,8 @@ func (s *sessionServiceServer) PushMessage(ctx context.Context, req *pb.PushRequ
 	return &pb.PushResponse{Success: resFlag}, err
 
 }
+
+// 클라이언트에서 session 연결 메서드
 func (s *sessionServiceServer) Connect(req *pb.ConnectRequest, stream pb.SessionService_ConnectServer) error {
 	userId := req.GetUserId()
 	sessionId := req.GetSessionId()
