@@ -17,6 +17,7 @@ func NewGRPCServer() *grpc.Server {
 	return grpc.NewServer()
 }
 
+// TODO: keepalive 설정
 func RegisterGRPCServer(lc fx.Lifecycle, grpcServer *grpc.Server, service pb.SessionServiceServer, log *logger.Logger, env env.Env) {
 	svc := service.(*sessionServiceServer) // 타입 캐스팅
 	lc.Append(fx.Hook{

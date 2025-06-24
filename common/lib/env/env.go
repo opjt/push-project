@@ -8,6 +8,7 @@ import (
 	"github.com/sethvargo/go-envconfig"
 )
 
+// 모든 서비스에서 사용하는 env.
 type Env struct {
 	Log     Log     `env:", prefix=LOG_"`
 	App     App     `env:", prefix=APP_"`
@@ -16,6 +17,11 @@ type Env struct {
 	Session Session `env:", prefix=SESSION_"`
 	DB      DB      `env:", prefix=MARIA_"`
 	Redis   Redis   `env:", prefix=REDIS_"`
+	Pod     PodInfo `env:", prefix=POD_"`
+}
+
+type PodInfo struct {
+	Index int `env:"INDEX"`
 }
 
 type App struct {
