@@ -1,5 +1,6 @@
 package types
 
+// TODO: 메세지 타입
 const (
 	StatusPending  = "pending"  // 메시지 발행 후, 아직 sender가 처리 전인 상태
 	StatusSending  = "sending"  // sender가 메시지를 받아 실제 전송 작업 중인 상태

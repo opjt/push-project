@@ -7,12 +7,8 @@ import (
 	"push/common/lib/logger"
 	msgTypes "push/linker/types"
 	"push/sender/internal/dto"
+	"push/sender/internal/service"
 	"time"
-
-	"push/linker/api/client"
-	pb "push/linker/api/proto"
-	sclient "push/sessionmanager/api/client"
-	spb "push/sessionmanager/api/proto"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/sqs/types"
@@ -24,15 +20,15 @@ type Handler interface {
 
 type handler struct {
 	log           *logger.Logger
-	mclient       client.MessageClient
-	sessionClient sclient.SessionClient
+	senderService service.SenderService
+	// mclient       client.MessageClient
+	// sessionClient sclient.SessionClient
 }
 
-func NewHandler(log *logger.Logger, mclient client.MessageClient, sessionClient sclient.SessionClient) Handler {
+func NewHandler(log *logger.Logger, senderService service.SenderService) Handler {
 	return &handler{
 		log:           log,
-		mclient:       mclient,
-		sessionClient: sessionClient,
+		senderService: senderService,
 	}
 }
 
@@ -46,8 +42,13 @@ func (h *handler) HandleMessage(ctx context.Context, msg types.Message) error {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
 
+	updateStatusReq := dto.UpdateMessageStatus{
+		Id:       uint64(pushMsg.MsgID),
+		Status:   msgTypes.StatusSending,
+		SnsMsgId: *msg.MessageId,
+	}
 	// Linker에게 MessageStatus Update 요청
-	if _, err = h.mclient.UpdateStatus(ctx, &pb.ReqUpdateStatus{Id: uint64(pushMsg.MsgID), Status: msgTypes.StatusSending, SnsMsgId: *msg.MessageId}); err != nil {
+	if err = h.senderService.UpdateMessage(ctx, updateStatusReq); err != nil {
 		return fmt.Errorf("failed to update message status: %w", err)
 	}
 	// SessionManager에게 메세지 전송 요청
@@ -55,25 +56,11 @@ func (h *handler) HandleMessage(ctx context.Context, msg types.Message) error {
 }
 
 func (h *handler) sendPushMessage(pushMsg *dto.PushMessage) error {
-	pushReq := spb.PushRequest{
-		UserId:    uint64(pushMsg.UserID),
-		SessionId: "",
-		Message: &spb.ServerMessage{
-			MsgId: uint64(pushMsg.MsgID),
-			Title: pushMsg.Title,
-			Body:  pushMsg.Body,
-		},
-	}
-	result, err := h.sessionClient.PushMessage(context.Background(), &pushReq)
-	if err != nil {
-		return err
-	}
-	if !result.Success {
-		_, updateErr := h.mclient.UpdateStatus(context.Background(), &pb.ReqUpdateStatus{
-			Id:     uint64(pushMsg.MsgID),
-			Status: msgTypes.StatusDeferred,
-		})
-		return updateErr
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*2)
+	defer cancel()
+
+	if err := h.senderService.PushMessage(ctx, *pushMsg); err != nil {
+		return fmt.Errorf("failed to send push message: %w", err)
 	}
 	return nil
 }
