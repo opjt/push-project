@@ -37,7 +37,7 @@ func NewSessionFacade(
 func (r *SessionFacade) Add(userID uint64, sessionID string, stream pb.SessionService_ConnectServer) {
 	r.sessions.Add(sessionID, stream)
 	r.userSessionPool.Add(userID, sessionID)
-	r.writeRepository.SaveSession(context.Background(), userID, sessionID, "pod1") // TODO: podId 가져오기
+	r.writeRepository.SaveSession(context.Background(), userID, sessionID, "default") // TODO: podId 가져오기
 }
 
 // 세션 제거

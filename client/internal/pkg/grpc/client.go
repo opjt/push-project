@@ -33,7 +33,7 @@ type SessionClient interface {
 }
 
 func NewSessionServiceClient(logger *logger.Logger, lc fx.Lifecycle, env env.Env) (SessionClient, error) {
-	clientConn, err := grpc.NewClient("localhost:"+env.Session.Port, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	clientConn, err := grpc.NewClient(fmt.Sprintf("localhost:%d", env.Session.Port), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return nil, fmt.Errorf("failed to dial gRPC: %w", err)
 	}

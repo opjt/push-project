@@ -8,6 +8,7 @@ import (
 	"push/sender/internal/dto"
 	sclient "push/sessionmanager/api/client"
 	spb "push/sessionmanager/api/proto"
+	"push/sessionmanager/sessionstore"
 )
 
 type SenderService interface {
@@ -16,14 +17,16 @@ type SenderService interface {
 }
 
 type senderService struct {
-	messageRpc client.MessageClient
-	sessionRpc sclient.SessionClient
+	messageRpc     client.MessageClient
+	sessionClients sclient.SessionClients
+	sessionStore   sessionstore.ReadRepository
 }
 
-func NewSenderService(messageRpc client.MessageClient, sessionRpc sclient.SessionClient) SenderService {
+func NewSenderService(messageRpc client.MessageClient, sessionClients sclient.SessionClients, sessionStore sessionstore.ReadRepository) SenderService {
 	return &senderService{
-		messageRpc: messageRpc,
-		sessionRpc: sessionRpc,
+		messageRpc:     messageRpc,
+		sessionClients: sessionClients,
+		sessionStore:   sessionStore,
 	}
 }
 
@@ -48,7 +51,8 @@ func (s *senderService) PushMessage(ctx context.Context, pushMsg dto.PushMessage
 			Body:  pushMsg.Body,
 		},
 	}
-	result, err := s.sessionRpc.PushMessage(context.Background(), &pushReq)
+	client := s.sessionClients["localhost:50052"]
+	result, err := client.PushMessage(context.Background(), &pushReq)
 	if err != nil {
 		return err
 	}
@@ -61,3 +65,23 @@ func (s *senderService) PushMessage(ctx context.Context, pushMsg dto.PushMessage
 	}
 	return nil
 }
+
+// func (s *senderService) sendSessionToUser(ctx context.Context, req *spb.PushRequest) error {
+
+// 	sessions, err := s.sessionStore.GetUserSessions(ctx, req.UserId)
+// 	if err != nil {
+// 		return err
+// 	}
+
+// 	for _, session := range sessions {
+// 		podId := session.PodID
+// 		client := s.sessionClients[podId]
+
+// 		_, err := client.PushMessage(ctx, req)
+// 		if err != nil {
+// 			return err
+// 		}
+// 	}
+
+// 	return nil
+// }

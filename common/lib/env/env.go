@@ -42,7 +42,7 @@ type Linker struct {
 }
 
 type Session struct {
-	Port string `env:"PORT, default=50052"`
+	Port int `env:"PORT, default=50052"`
 }
 
 type DB struct {

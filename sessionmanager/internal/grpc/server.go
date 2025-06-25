@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"context"
+	"fmt"
 	"net"
 
 	"push/common/lib/env"
@@ -22,7 +23,7 @@ func RegisterGRPCServer(lc fx.Lifecycle, grpcServer *grpc.Server, service pb.Ses
 	svc := service.(*sessionServiceServer) // 타입 캐스팅
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
-			lis, err := net.Listen("tcp", ":"+env.Session.Port)
+			lis, err := net.Listen("tcp", fmt.Sprintf(":%d", env.Session.Port))
 			if err != nil {
 				return err
 			}
@@ -35,7 +36,7 @@ func RegisterGRPCServer(lc fx.Lifecycle, grpcServer *grpc.Server, service pb.Ses
 				}
 			}()
 
-			log.Debug("gRPC server started on :" + env.Session.Port)
+			log.Debug("gRPC server started on :", env.Session.Port)
 			return nil
 		},
 		OnStop: func(ctx context.Context) error {
