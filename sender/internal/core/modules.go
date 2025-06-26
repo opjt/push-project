@@ -4,8 +4,8 @@ import (
 	"push/common"
 	"push/linker/api/client"
 	"push/sender/internal/service"
+	"push/sender/internal/service/session"
 	"push/sender/internal/sqs"
-	sclient "push/sessionmanager/api/client"
 	"push/sessionmanager/sessionstore"
 
 	"go.uber.org/fx"
@@ -17,8 +17,8 @@ var Modules = fx.Options(
 	fx.Provide(sqs.NewHandler),
 	fx.Invoke(sqs.NewConsumer),
 	client.Module,
-	fx.Provide(sclient.NewSessioneServiceClient),
-	fx.Provide(sclient.NewSessionClients),
+
+	fx.Provide(session.NewSessionClients),
 
 	fx.Provide(sessionstore.NewRedisClient),
 	fx.Provide(sessionstore.NewReadRepository),

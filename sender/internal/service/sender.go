@@ -6,7 +6,7 @@ import (
 	pb "push/linker/api/proto"
 	msgtypes "push/linker/types"
 	"push/sender/internal/dto"
-	sclient "push/sessionmanager/api/client"
+	"push/sender/internal/service/session"
 	spb "push/sessionmanager/api/proto"
 	"push/sessionmanager/sessionstore"
 )
@@ -18,11 +18,11 @@ type SenderService interface {
 
 type senderService struct {
 	messageRpc     client.MessageClient
-	sessionClients sclient.SessionClients
+	sessionClients session.SessionClients
 	sessionStore   sessionstore.ReadRepository
 }
 
-func NewSenderService(messageRpc client.MessageClient, sessionClients sclient.SessionClients, sessionStore sessionstore.ReadRepository) SenderService {
+func NewSenderService(messageRpc client.MessageClient, sessionClients session.SessionClients, sessionStore sessionstore.ReadRepository) SenderService {
 	return &senderService{
 		messageRpc:     messageRpc,
 		sessionClients: sessionClients,
