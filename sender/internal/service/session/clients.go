@@ -1,7 +1,6 @@
 package session
 
 import (
-	"fmt"
 	"push/common/lib/env"
 	"push/sessionmanager/api/client"
 
@@ -10,14 +9,13 @@ import (
 
 type SessionClients map[string]client.SessionClient
 
+func getPods(podCount int) []string {
+	return []string{"localhost:50052"}
+}
 func NewSessionClients(lc fx.Lifecycle, env env.Env) (SessionClients, error) {
 	podRange := env.Pod.Index
 
-	addresses := make([]string, podRange)
-	for i := 0; i < podRange; i++ {
-		addresses[i] = fmt.Sprintf("localhost:%d", env.Session.Port+i)
-
-	}
+	addresses := getPods(podRange)
 
 	clients := make(SessionClients)
 

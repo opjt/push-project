@@ -3,6 +3,7 @@ package session
 import (
 	"context"
 	"fmt"
+	"push/common/lib/env"
 	"push/common/lib/logger"
 	"push/linker/api/client"
 	pb "push/sessionmanager/api/proto"
@@ -11,8 +12,8 @@ import (
 )
 
 type SessionFacade struct {
-	sessions SessionManager // sessionID -> stream
-
+	sessions        SessionManager // sessionID -> stream
+	podAddr         string
 	logger          *logger.Logger
 	rpc             client.MessageClient
 	writeRepository sessionstore.WriteRepository
@@ -23,11 +24,15 @@ func NewSessionFacade(
 	logger *logger.Logger,
 	rpc client.MessageClient,
 	writeRepository sessionstore.WriteRepository,
+	env env.Env,
+
 ) *SessionFacade {
+	podAddr := fmt.Sprintf("%s:%d", env.App.Addr, env.Session.Port)
 	return &SessionFacade{
 		sessions:        sessions,
 		logger:          logger,
 		rpc:             rpc,
+		podAddr:         podAddr,
 		writeRepository: writeRepository,
 	}
 }
@@ -35,7 +40,7 @@ func NewSessionFacade(
 // 세션 추가
 func (r *SessionFacade) Add(userID uint64, sessionID string, stream pb.SessionService_ConnectServer) {
 	r.sessions.Add(sessionID, stream)
-	r.writeRepository.SaveSession(context.Background(), userID, sessionID, "localhost:50052") // TODO: podId 가져오기
+	r.writeRepository.SaveSession(context.Background(), userID, sessionID, r.podAddr)
 }
 
 // 세션 제거

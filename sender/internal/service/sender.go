@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"push/common/lib/logger"
 	"push/linker/api/client"
 	pb "push/linker/api/proto"
 	msgtypes "push/linker/types"
@@ -20,13 +21,15 @@ type senderService struct {
 	messageRpc     client.MessageClient
 	sessionClients session.SessionClients
 	sessionStore   sessionstore.ReadRepository
+	logger         *logger.Logger
 }
 
-func NewSenderService(messageRpc client.MessageClient, sessionClients session.SessionClients, sessionStore sessionstore.ReadRepository) SenderService {
+func NewSenderService(messageRpc client.MessageClient, sessionClients session.SessionClients, sessionStore sessionstore.ReadRepository, logger *logger.Logger) SenderService {
 	return &senderService{
 		messageRpc:     messageRpc,
 		sessionClients: sessionClients,
 		sessionStore:   sessionStore,
+		logger:         logger,
 	}
 }
 

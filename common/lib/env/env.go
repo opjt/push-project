@@ -26,6 +26,8 @@ type PodInfo struct {
 
 type App struct {
 	Stage string `env:"STAGE, default=dev"`
+	Host  string `env:"HOST, default=0.0.0.0"`
+	Addr  string `env:"ADDR, default=localhost"`
 }
 
 type Log struct {
