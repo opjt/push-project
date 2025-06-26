@@ -21,8 +21,6 @@ type Handler interface {
 type handler struct {
 	log           *logger.Logger
 	senderService service.SenderService
-	// mclient       client.MessageClient
-	// sessionClient sclient.SessionClient
 }
 
 func NewHandler(log *logger.Logger, senderService service.SenderService) Handler {

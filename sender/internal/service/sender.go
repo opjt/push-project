@@ -73,7 +73,7 @@ func (s *senderService) sendToUserSessions(ctx context.Context, req *spb.PushReq
 		req.SessionId = session.SessionID
 		res, err := client.PushMessage(ctx, req)
 		if err != nil {
-			return err // TODO: error 처리 개선 필요.
+			return err // TODO: error 처리 개선 필요. []error
 		}
 		if res.Success {
 			successCount++
