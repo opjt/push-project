@@ -90,7 +90,7 @@ func NewSessionClients(logger *logger.Logger, lc fx.Lifecycle, env env.Env) (Ses
 }
 
 func (m *sessionClient) PushMessage(ctx context.Context, req *pb.PushRequest) (*pb.PushResponse, error) {
-
+	m.logger.Debugf("reqSessionClient  req: %v", req)
 	return m.client.PushMessage(ctx, req)
 }
 

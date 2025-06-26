@@ -23,7 +23,7 @@ message ServerMessage {
 
 message PushRequest {
   uint64 user_id = 1;
-  string session_id = 2; // 선택사항: 유저가 다중 세션일 경우
+  string session_id = 2; 
   ServerMessage message = 3;
 }
 message PushResponse {

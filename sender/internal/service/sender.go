@@ -51,37 +51,42 @@ func (s *senderService) PushMessage(ctx context.Context, pushMsg dto.PushMessage
 			Body:  pushMsg.Body,
 		},
 	}
-	client := s.sessionClients["localhost:50052"]
-	result, err := client.PushMessage(context.Background(), &pushReq)
+
+	if err := s.sendToUserSessions(ctx, &pushReq); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *senderService) sendToUserSessions(ctx context.Context, req *spb.PushRequest) error {
+
+	sessions, err := s.sessionStore.GetUserSessions(ctx, req.UserId)
+
 	if err != nil {
 		return err
 	}
-	if !result.Success {
+	successCount := 0
+	for _, session := range sessions {
+		podAddr := session.PodID
+		client := s.sessionClients[podAddr]
+		req.SessionId = session.SessionID
+		res, err := client.PushMessage(ctx, req)
+		if err != nil {
+			return err // TODO: error 처리 개선 필요.
+		}
+		if res.Success {
+			successCount++
+		}
+	}
+
+	if successCount == 0 {
 		_, updateErr := s.messageRpc.UpdateStatus(context.Background(), &pb.ReqUpdateStatus{
-			Id:     uint64(pushMsg.MsgID),
+			Id:     req.Message.MsgId,
 			Status: msgtypes.StatusDeferred,
 		})
 		return updateErr
 	}
+
 	return nil
 }
-
-// func (s *senderService) sendSessionToUser(ctx context.Context, req *spb.PushRequest) error {
-
-// 	sessions, err := s.sessionStore.GetUserSessions(ctx, req.UserId)
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	for _, session := range sessions {
-// 		podId := session.PodID
-// 		client := s.sessionClients[podId]
-
-// 		_, err := client.PushMessage(ctx, req)
-// 		if err != nil {
-// 			return err
-// 		}
-// 	}
-
-// 	return nil
-// }
