@@ -46,8 +46,8 @@ graph LR
 
 ## 프로젝트 중 겪은 고민과 해결방안
 
-- [메시지 상태 업데이트 책임 위치 및 처리 방식](https://opjt.github.io/Project/push-project/messageUpdate.html)
-- [수십만 세션을 pod에 분산하려면 어떤 구조가 필요할까?](https://opjt.github.io/Project/push-project/session.html)
+- [메시지 상태 업데이트 책임 위치 및 처리 방식](https://opjt.github.io/til/Project/push-project/messageUpdate.html)
+- [수십만 세션을 pod에 분산하려면 어떤 구조가 필요할까?](https://opjt.github.io/til/Project/push-project/session.html)
 
 ## 프로젝트 실행하기 (개발환경)
 
