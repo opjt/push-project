@@ -1,7 +1,7 @@
 
 services:
   localstack:
-    image: localstack/localstack:latest
+    image: localstack/localstack:3.8.1
     container_name: localstack
     ports:
       - "4566:4566"  # AWS 서비스 엔드포인트
@@ -27,7 +27,6 @@ services:
       - "${REDIS_PORT}:${REDIS_PORT}"
     volumes:
       - ./tmp/redis-data:/data # TODO: Named Volume으로 변경 필요
-    restart: always
 
 # volumes:
 #   mariadb-data:
